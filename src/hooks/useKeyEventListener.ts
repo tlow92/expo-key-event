@@ -1,4 +1,3 @@
-import { useEventListener } from "expo";
 import { useCallback, useEffect } from "react";
 import { DevSettings } from "react-native";
 
@@ -29,7 +28,14 @@ export function useKeyEventListener(
     [listener]
   );
 
-  useEventListener(ExpoKeyEventModule, "onKeyPress", onKeyPress);
+  useEffect(() => {
+    const subscription = ExpoKeyEventModule.addListener(
+      "onKeyPress",
+      onKeyPress
+    );
+
+    return () => subscription.remove();
+  }, []);
 
   useEffect(() => {
     if (listenOnMount) ExpoKeyEventModule.startListening();

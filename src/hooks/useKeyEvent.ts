@@ -1,9 +1,9 @@
-import { useEvent } from "expo";
-import { useEffect, useMemo } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { DevSettings } from "react-native";
 
 import ExpoKeyEventModule from "../ExpoKeyEventModule";
 import { unifyKeyCode } from "../utils/unifyKeyCode";
+import { KeyPressEvent } from "../ExpoKeyEvent.types";
 
 /**
  *
@@ -14,7 +14,13 @@ import { unifyKeyCode } from "../utils/unifyKeyCode";
  *
  */
 export function useKeyEvent(listenOnMount = true, preventReload = false) {
-  const event = useEvent(ExpoKeyEventModule, "onKeyPress");
+  const [event, setEvent] = useState<KeyPressEvent | null>(null);
+
+  useEffect(() => {
+    const subscription = ExpoKeyEventModule.addListener("onKeyPress", setEvent);
+
+    return () => subscription.remove();
+  }, []);
 
   useEffect(() => {
     if (listenOnMount) ExpoKeyEventModule.startListening();
