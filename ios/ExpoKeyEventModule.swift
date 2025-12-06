@@ -16,12 +16,14 @@ public class ExpoKeyEventModule: Module {
           let listenerView = KeyboardListenerView(
             onKeyPress: { key in
               self.sendEvent("onKeyPress", [
-                  "key": key
+                  "key": key,
+                  "eventType": "press"
               ])
             },
             onKeyRelease: { key in
               self.sendEvent("onKeyRelease", [
-                  "key": key
+                  "key": key,
+                  "eventType": "release"
               ])
             }
           )

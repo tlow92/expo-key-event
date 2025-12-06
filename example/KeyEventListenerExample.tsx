@@ -1,5 +1,5 @@
 import { useKeyEventListener } from "expo-key-event";
-import { useState, useRef } from "react";
+import { useState } from "react";
 import { Text, View, Switch } from "react-native";
 import Animated, { FadeInLeft } from "react-native-reanimated";
 
@@ -12,25 +12,13 @@ type KeyLog = {
 export function KeyEventListenerExample() {
   const [listenToRelease, setListenToRelease] = useState(true);
   const [keyLogs, setKeyLogs] = useState<KeyLog[]>([]);
-  const pressedKeys = useRef<Set<string>>(new Set());
 
   useKeyEventListener(
     (event) => {
-      // Track key state to determine if this is a press or release
-      // If the key is already in our set, this is a release event
-      const isRelease = pressedKeys.current.has(event.key);
-      const eventType: "press" | "release" = isRelease ? "release" : "press";
-
-      if (isRelease) {
-        pressedKeys.current.delete(event.key);
-      } else {
-        pressedKeys.current.add(event.key);
-      }
-
       const newLog: KeyLog = {
         id: Math.random().toString(),
         key: event.key,
-        eventType,
+        eventType: event.eventType,
       };
 
       setKeyLogs((prev) => {
@@ -59,7 +47,6 @@ export function KeyEventListenerExample() {
             setListenToRelease((_) => !_);
             // Clear logs when toggling to see the difference
             setKeyLogs([]);
-            pressedKeys.current.clear();
           }}
           value={listenToRelease}
         />

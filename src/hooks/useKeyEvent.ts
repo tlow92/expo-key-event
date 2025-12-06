@@ -36,6 +36,7 @@ export function useKeyEvent(
     if (!preventReload && __DEV__ && uniKey === "KeyR") DevSettings.reload();
     return {
       key: uniKey,
+      eventType: "press" as const,
     };
   }, [pressEvent, preventReload]);
 
@@ -44,6 +45,7 @@ export function useKeyEvent(
     const uniKey = unifyKeyCode(releaseEvent.key);
     return {
       key: uniKey,
+      eventType: "release" as const,
     };
   }, [releaseEvent, listenToRelease]);
 

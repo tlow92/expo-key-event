@@ -26,7 +26,7 @@ export function useKeyEventListener(
       const uniKey = unifyKeyCode(key);
       if (!preventReload && __DEV__ && uniKey === "KeyR") DevSettings.reload();
 
-      listener({ key: uniKey });
+      listener({ key: uniKey, eventType: "press" });
     },
     [listener, preventReload],
   );
@@ -34,7 +34,7 @@ export function useKeyEventListener(
   const onKeyRelease = useCallback(
     ({ key }: KeyReleaseEvent) => {
       const uniKey = unifyKeyCode(key);
-      listener({ key: uniKey });
+      listener({ key: uniKey, eventType: "release" });
     },
     [listener],
   );
