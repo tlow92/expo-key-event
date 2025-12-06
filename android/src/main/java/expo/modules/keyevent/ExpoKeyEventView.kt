@@ -6,7 +6,12 @@ import expo.modules.kotlin.AppContext
 import expo.modules.kotlin.viewevent.EventDispatcher
 import expo.modules.kotlin.views.ExpoView
 
-class ExpoKeyEventView(context: Context, appContext: AppContext, private val onKeyPress: (Map<String, String>) -> Unit) : ExpoView(context, appContext) {
+class ExpoKeyEventView(
+  context: Context,
+  appContext: AppContext,
+  private val onKeyPress: (Map<String, String>) -> Unit,
+  private val onKeyRelease: (Map<String, String>) -> Unit
+) : ExpoView(context, appContext) {
 
   init {
     // Allows the view to receive key events.
@@ -25,8 +30,8 @@ class ExpoKeyEventView(context: Context, appContext: AppContext, private val onK
     return super.onKeyDown(keyCode, event)
   }
 
-  // Explicitly handle and ignore key up events
   override fun onKeyUp(keyCode: Int, event: KeyEvent?): Boolean {
+    onKeyRelease(mapOf("key" to keyCode.toString()))
     return super.onKeyUp(keyCode, event)
   }
 }
