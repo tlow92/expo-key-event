@@ -1,7 +1,7 @@
 {
   "expo": {
-    "name": "expo-54",
-    "slug": "expo-54",
+    "name": "expo-key-event-example-expo-54",
+    "slug": "expo-key-event-example-expo-54",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/icon.png",
@@ -13,7 +13,8 @@
       "backgroundColor": "#ffffff"
     },
     "ios": {
-      "supportsTablet": true
+      "supportsTablet": true,
+      "bundleIdentifier": "expo.modules.keyevent.exampleExpo54"
     },
     "android": {
       "adaptiveIcon": {
@@ -21,7 +22,8 @@
         "backgroundColor": "#ffffff"
       },
       "edgeToEdgeEnabled": true,
-      "predictiveBackGestureEnabled": false
+      "predictiveBackGestureEnabled": false,
+      "package": "expo.modules.keyevent.exampleExpo54"
     },
     "web": {
       "favicon": "./assets/favicon.png"

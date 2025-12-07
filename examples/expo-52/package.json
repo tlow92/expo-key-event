@@ -1,5 +1,5 @@
 {
-  "name": "expo-key-event-example",
+  "name": "expo-key-event-example-expo-52",
   "version": "1.0.0",
   "main": "index.ts",
   "scripts": {
@@ -25,7 +25,7 @@
   "private": true,
   "expo": {
     "autolinking": {
-      "nativeModulesDir": ".."
+      "nativeModulesDir": "../.."
     }
   }
 }
