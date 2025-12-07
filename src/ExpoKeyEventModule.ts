@@ -13,7 +13,7 @@ try {
 } catch (e) {
   console.error(e);
   throw new Error(
-    "ExpoKeyEventModule not available. Make sure you are not using Expo Go. Check https://github.com/tlow92/expo-key-event?tab=readme-ov-file#error-cannot-find-native-module-expokeyevent for more information."
+    "ExpoKeyEventModule not available. Make sure you are not using Expo Go. Check https://github.com/tlow92/expo-key-event?tab=readme-ov-file#error-cannot-find-native-module-expokeyevent for more information.",
   );
 }
 

@@ -10,11 +10,17 @@ import { unifyKeyCode } from "../utils/unifyKeyCode";
  * @param listenOnMount Pass 'false' to prevent automatic key event listening
  * - Use startListening/stopListening to control the listener manually
  * @param preventReload Prevent reloading the app when pressing 'r'
+ * @param listenToRelease Pass 'true' to enable onKeyRelease events (defaults to false for backward compatibility)
  * @returns
  *
  */
-export function useKeyEvent(listenOnMount = true, preventReload = false) {
-  const event = useEvent(ExpoKeyEventModule, "onKeyPress");
+export function useKeyEvent(
+  listenOnMount = true,
+  preventReload = false,
+  listenToRelease = false,
+) {
+  const pressEvent = useEvent(ExpoKeyEventModule, "onKeyPress");
+  const releaseEvent = useEvent(ExpoKeyEventModule, "onKeyRelease");
 
   useEffect(() => {
     if (listenOnMount) ExpoKeyEventModule.startListening();
@@ -25,13 +31,23 @@ export function useKeyEvent(listenOnMount = true, preventReload = false) {
   }, [listenOnMount]);
 
   const keyEvent = useMemo(() => {
-    if (!event) return null;
-    const uniKey = unifyKeyCode(event.key);
+    if (!pressEvent) return null;
+    const uniKey = unifyKeyCode(pressEvent.key);
     if (!preventReload && __DEV__ && uniKey === "KeyR") DevSettings.reload();
     return {
       key: uniKey,
+      eventType: "press" as const,
     };
-  }, [event]);
+  }, [pressEvent, preventReload]);
+
+  const keyReleaseEvent = useMemo(() => {
+    if (!listenToRelease || !releaseEvent) return null;
+    const uniKey = unifyKeyCode(releaseEvent.key);
+    return {
+      key: uniKey,
+      eventType: "release" as const,
+    };
+  }, [releaseEvent, listenToRelease]);
 
   return {
     /**
@@ -43,5 +59,6 @@ export function useKeyEvent(listenOnMount = true, preventReload = false) {
      */
     stopListening: ExpoKeyEventModule.stopListening,
     keyEvent,
+    keyReleaseEvent,
   };
 }

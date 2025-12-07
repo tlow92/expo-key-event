@@ -5,7 +5,7 @@ public class ExpoKeyEventModule: Module {
 
   public func definition() -> ModuleDefinition {
     Name("ExpoKeyEvent")
-    Events("onKeyPress")
+    Events("onKeyPress", "onKeyRelease")
     Function("startListening") { [weak self] in
       guard let self = self else { return }
 
@@ -13,11 +13,20 @@ public class ExpoKeyEventModule: Module {
       DispatchQueue.main.async {
         // If we haven't already added the listener view, create one and add it.
         if self.keyboardListenerView == nil {
-          let listenerView = KeyboardListenerView { key in
-            self.sendEvent("onKeyPress", [
-                "key": key
-            ])
-          }
+          let listenerView = KeyboardListenerView(
+            onKeyPress: { key in
+              self.sendEvent("onKeyPress", [
+                  "key": key,
+                  "eventType": "press"
+              ])
+            },
+            onKeyRelease: { key in
+              self.sendEvent("onKeyRelease", [
+                  "key": key,
+                  "eventType": "release"
+              ])
+            }
+          )
 
           #if os(macOS)
             if let window = NSApplication.shared.keyWindow,
@@ -54,9 +63,11 @@ public class ExpoKeyEventModule: Module {
 #if os(macOS)
   class KeyboardListenerView: NSView {
     private let onKeyPress: (String) -> Void
+    private let onKeyRelease: (String) -> Void
 
-    init(_ onKeyPress: @escaping (String) -> Void) {
+    init(onKeyPress: @escaping (String) -> Void, onKeyRelease: @escaping (String) -> Void) {
       self.onKeyPress = onKeyPress
+      self.onKeyRelease = onKeyRelease
       super.init(frame: .zero)
 
       // Hide this view; we only need it to intercept events.
@@ -74,13 +85,19 @@ public class ExpoKeyEventModule: Module {
     override func keyDown(with event: NSEvent) {
       onKeyPress(String(event.keyCode))
     }
+
+    override func keyUp(with event: NSEvent) {
+      onKeyRelease(String(event.keyCode))
+    }
   }
 #else
   class KeyboardListenerView: UIView {
     private let onKeyPress: (String) -> Void
+    private let onKeyRelease: (String) -> Void
 
-    init(_ onKeyPress: @escaping (String) -> Void) {
+    init(onKeyPress: @escaping (String) -> Void, onKeyRelease: @escaping (String) -> Void) {
       self.onKeyPress = onKeyPress
+      self.onKeyRelease = onKeyRelease
       super.init(frame: .zero)
 
       // Hide this view; we only need it to intercept events.
@@ -96,11 +113,19 @@ public class ExpoKeyEventModule: Module {
       return true
     }
 
-  override func pressesBegan(_ presses: Set<UIPress>, with event: UIPressesEvent?) {
+    override func pressesBegan(_ presses: Set<UIPress>, with event: UIPressesEvent?) {
       super.pressesBegan(presses, with: event)
       guard let uiKey = presses.first?.key else { return }
 
       onKeyPress(String(uiKey.keyCode.rawValue))
+      return
+    }
+
+    override func pressesEnded(_ presses: Set<UIPress>, with event: UIPressesEvent?) {
+      super.pressesEnded(presses, with: event)
+      guard let uiKey = presses.first?.key else { return }
+
+      onKeyRelease(String(uiKey.keyCode.rawValue))
       return
     }
   }
