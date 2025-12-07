@@ -14,7 +14,7 @@ export function KeyEventDisplay() {
   const [listening, setListening] = useState(false);
   const [listenToRelease, setListenToRelease] = useState(true);
   const { keyEvent, keyReleaseEvent, startListening, stopListening } =
-    useKeyEvent(automaticControl, false, listenToRelease);
+    useKeyEvent({ listenOnMount: automaticControl, listenToRelease });
 
   const [keys, setKeys] = useState<DisplayedKey[]>([]);
 

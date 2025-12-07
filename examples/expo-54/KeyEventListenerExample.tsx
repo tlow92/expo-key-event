@@ -26,9 +26,11 @@ export function KeyEventListenerExample() {
         return updated.slice(0, 10); // Keep last 10 events
       });
     },
-    true, // listenOnMount
-    false, // preventReload
-    listenToRelease // listenToRelease
+    {
+      listenOnMount: true,
+      preventReload: false,
+      listenToRelease,
+    }
   );
 
   return (
