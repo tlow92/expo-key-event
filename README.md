@@ -71,7 +71,11 @@ import { useKeyEvent } from "expo-key-event";
 import { Text, View } from "react-native";
 
 export function MyComponent() {
-  const { keyEvent, startListening, stopListening } = useKeyEvent(false);
+  // deprecated way
+  // const { keyEvent, startListening, stopListening } = useKeyEvent(false);
+  // new way
+  const { keyEvent, keyReleaseEvent, startListening, stopListening } =
+    useKeyEvent({ listenOnMount: false });
 
   return (
     <View>
@@ -91,9 +95,19 @@ import { Text, View } from "react-native";
 
 export function MyComponent() {
   const [keyEvent, setKeyEvent] = useState<KeyPressEvent>();
-  const { startListening, stopListening } = useKeyEventListener((event) => {
-    setKeyEvent(event);
-  }, automaticControl);
+  // deprecated way
+  // const { startListening, stopListening } = useKeyEventListener((event) => {
+  //   setKeyEvent(event);
+  // }, automaticControl);
+  // new way
+  const { startListening, stopListening } = useKeyEventListener(
+    (event) => {
+      setKeyEvent(event);
+    },
+    {
+      listenOnMount: automaticControl,
+    }
+  );
 
   return (
     <View>
@@ -117,7 +131,7 @@ export function MyComponent() {
 
 ## Troubleshooting
 
-### _expo.useEvent is not a function
+### \_expo.useEvent is not a function
 
 This is most likely due to using Expo SDK lower than 52. `useEvent` was introduced in SDK 52.
 
