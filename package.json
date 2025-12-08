@@ -51,6 +51,7 @@
     },
     "npm": {
       "publish": true
-    }
+    },
+    "github.release": true
   }
 }
