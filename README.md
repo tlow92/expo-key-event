@@ -121,9 +121,16 @@ export function MyComponent() {
 
 <br />
 
-## Run example app
+## Run example apps
 
-`cd example`
+There are two example apps available:
+
+- `expo-52`: Example for Expo SDK 52
+- `expo-54`: Example for Expo SDK 54
+
+To run an example:
+
+`cd examples/expo-52` (or `cd examples/expo-54`)
 
 `npm run ios` / `npm run android` / `npm run web`
 
