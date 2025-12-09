@@ -8,12 +8,14 @@
     "ios": "expo run:ios",
     "web": "expo start --web",
     "e2e:server": "node e2e/server.js",
+    "e2e:web": "maestro test e2e/browser.e2e.yaml --headless",
     "e2e:android": "maestro test e2e/maestro.e2e.yaml",
     "e2e:ios": "maestro test e2e/maestro.e2e.yaml",
     "e2e:android:prepare": "expo prebuild --clean && npm run android -- --no-bundler",
     "e2e:ios:prepare": "expo prebuild --clean && npm run ios -- --no-bundler",
-    "e2e:ios:all": "npm run e2e:ios:prepare && concurrently 'npm run e2e:server' 'npx expo start' 'npm run e2e:ios'",
-    "e2e:android:all": "npm run e2e:android:prepare && concurrently 'npm run e2e:server' 'npx expo start' 'npm run e2e:android'"
+    "e2e:ios:all": "npm run e2e:ios:prepare && concurrently --kill-others 'npm run e2e:server' 'npx expo start' 'npm run e2e:ios'",
+    "e2e:android:all": "npm run e2e:android:prepare && concurrently --kill-others 'npm run e2e:server' 'npx expo start' 'npm run e2e:android'",
+    "e2e:web:all": "concurrently --kill-others 'npm run start' 'npm run e2e:web'"
   },
   "dependencies": {
     "expo": "~54.0.27",
