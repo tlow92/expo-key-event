@@ -1,0 +1,79 @@
+appId: expo.modules.keyevent.exampleExpo54
+name: E2E Tests for expo-key-event
+onFlowStart:
+  - runScript: maestro-utils.js
+---
+- launchApp:
+    clearState: true
+
+# - runFlow:
+#     when:
+#       visible: "Open"
+#     commands:
+#       - openLink:
+#           link: expo-key-event-example-expo-54://?disableOnboarding=1
+
+- runFlow:
+    when:
+      visible: "http://localhost:8081"
+      platform: iOS
+    commands:
+      - tapOn: http://localhost:8081
+
+- runFlow:
+    when:
+      visible: "http://10.0.2.2:8081"
+      platform: Android
+    commands:
+      - tapOn: http://10.0.2.2:8081
+
+- runFlow:
+    when:
+      visible: "Continue"
+    commands:
+      - tapOn: Continue
+      - tapOn: Close
+
+- extendedWaitUntil:
+    visible: "useKeyEvent"
+    timeout: 20000
+
+- runFlow:
+    when:
+      platform: 'android'
+    commands:
+        - evalScript: ${output.utils.sendKeyEvent(31, maestro.platform)}
+
+- runFlow:
+    when:
+      platform: 'ios'
+    commands:
+        - evalScript: ${output.utils.sendKeyEvent(6, maestro.platform)}
+
+- assertVisible:
+    text: "PRESS"
+- assertVisible: "RELEASE"
+- assertVisible: "KeyC"
+
+# Switch to the useKeyEventListener screen
+- tapOn: "useKeyEventListener"
+- extendedWaitUntil:
+    visible: "useKeyEventListener"
+    timeout: 10000
+
+- runFlow:
+    when:
+      platform: 'android'
+    commands:
+        - evalScript: ${output.utils.sendKeyEvent(31, maestro.platform)}
+
+- runFlow:
+    when:
+      platform: 'ios'
+    commands:
+        - evalScript: ${output.utils.sendKeyEvent(6, maestro.platform)}
+
+- assertVisible:
+    text: "PRESS"
+- assertVisible: "RELEASE"
+- assertVisible: "KeyC"

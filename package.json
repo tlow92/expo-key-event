@@ -50,6 +50,8 @@
     "npm": {
       "publish": true
     },
-    "github.release": true
+    "github": {
+      "release": true
+    }
   }
 }

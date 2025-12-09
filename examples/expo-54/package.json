@@ -6,12 +6,20 @@
     "start": "expo start",
     "android": "expo run:android",
     "ios": "expo run:ios",
-    "web": "expo start --web"
+    "web": "expo start --web",
+    "e2e:server": "node e2e/server.js",
+    "e2e:android": "maestro test e2e/maestro.e2e.yaml",
+    "e2e:ios": "maestro test e2e/maestro.e2e.yaml",
+    "e2e:android:prepare": "expo prebuild --clean && npm run android -- --no-bundler",
+    "e2e:ios:prepare": "expo prebuild --clean && npm run ios -- --no-bundler",
+    "e2e:ios:all": "npm run e2e:ios:prepare && concurrently 'npm run e2e:server' 'npx expo start' 'npm run e2e:ios'",
+    "e2e:android:all": "npm run e2e:android:prepare && concurrently 'npm run e2e:server' 'npx expo start' 'npm run e2e:android'"
   },
   "dependencies": {
     "expo": "~54.0.27",
     "expo-dev-client": "~6.0.20",
     "expo-status-bar": "~3.0.9",
+    "express": "^4.19.2",
     "react": "19.1.0",
     "react-dom": "19.1.0",
     "react-native": "0.81.5",
@@ -20,6 +28,7 @@
   },
   "devDependencies": {
     "@types/react": "~19.1.0",
+    "concurrently": "^9.2.1",
     "typescript": "~5.9.2"
   },
   "private": true,
