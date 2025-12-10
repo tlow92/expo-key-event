@@ -13,7 +13,11 @@
     "e2e:ios": "maestro test e2e/maestro.e2e.yaml",
     "e2e:android:prepare": "expo prebuild --clean && npm run android -- --no-bundler",
     "e2e:ios:prepare": "expo prebuild --clean && npm run ios -- --no-bundler",
+    "e2e:ios:prepare:ci": "expo prebuild --clean && ./e2e/ci-ios-setup.sh",
+    "e2e:ios:prepare:preboot": "expo prebuild --clean && ./e2e/pre-boot-simulator.sh && npm run ios -- --no-bundler",
     "e2e:ios:all": "npm run e2e:ios:prepare && concurrently --kill-others 'npm run e2e:server' 'npx expo start' 'npm run e2e:ios'",
+    "e2e:ios:all:ci": "npm run e2e:ios:prepare:ci && concurrently --kill-others 'npm run e2e:server' 'npx expo start' 'npm run e2e:ios'",
+    "e2e:ios:all:preboot": "npm run e2e:ios:prepare:preboot && concurrently --kill-others 'npm run e2e:server' 'npx expo start' 'npm run e2e:ios'",
     "e2e:android:all": "npm run e2e:android:prepare && concurrently --kill-others 'npm run e2e:server' 'npx expo start' 'npm run e2e:android'",
     "e2e:web:all": "concurrently --kill-others 'npm run start' 'npm run e2e:web'"
   },

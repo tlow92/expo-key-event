@@ -1,0 +1,100 @@
+#!/bin/bash
+set -e
+
+# CI-friendly iOS E2E setup script
+# This script avoids AppleScript issues by using xcrun simctl directly
+
+echo "🔨 Building iOS app..."
+
+# Set device and OS version (customize as needed)
+SIMULATOR_NAME="${SIMULATOR_NAME:-iPhone 16 Pro}"
+IOS_VERSION="${IOS_VERSION:-18.2}"
+SIMULATOR_DEVICE="${SIMULATOR_NAME} (${IOS_VERSION})"
+
+# Build configuration
+CONFIGURATION="${CONFIGURATION:-Debug}"
+SCHEME="${SCHEME:-expokeyeventexampleexpo54}"
+
+echo "📱 Target simulator: ${SIMULATOR_DEVICE}"
+echo "🔧 Configuration: ${CONFIGURATION}"
+
+# Build the app using xcodebuild directly
+echo "🏗️  Running xcodebuild..."
+cd ios
+
+xcodebuild \
+  -workspace expokeyeventexampleexpo54.xcworkspace \
+  -scheme ${SCHEME} \
+  -configuration ${CONFIGURATION} \
+  -sdk iphonesimulator \
+  -derivedDataPath build \
+  -destination "platform=iOS Simulator,name=${SIMULATOR_NAME},OS=${IOS_VERSION}" \
+  build
+
+cd ..
+
+# Find the built .app
+APP_PATH=$(find ios/build/Build/Products/${CONFIGURATION}-iphonesimulator -name "*.app" -type d -maxdepth 1 | head -n 1)
+
+if [ -z "$APP_PATH" ]; then
+  echo "❌ Error: Could not find built .app file"
+  exit 1
+fi
+
+echo "✅ Built app at: ${APP_PATH}"
+
+# Get or create simulator
+echo "🔍 Finding or creating simulator..."
+SIMULATOR_UDID=$(xcrun simctl list devices available | grep "${SIMULATOR_DEVICE}" | grep -o '[A-F0-9]\{8\}-[A-F0-9]\{4\}-[A-F0-9]\{4\}-[A-F0-9]\{4\}-[A-F0-9]\{12\}' | head -n 1)
+
+if [ -z "$SIMULATOR_UDID" ]; then
+  echo "❌ Error: Could not find simulator matching '${SIMULATOR_DEVICE}'"
+  echo "Available simulators:"
+  xcrun simctl list devices available
+  exit 1
+fi
+
+echo "📱 Using simulator UDID: ${SIMULATOR_UDID}"
+
+# Check if simulator is already booted
+SIMULATOR_STATE=$(xcrun simctl list devices | grep "${SIMULATOR_UDID}" | sed -n 's/.*(\(.*\)).*/\1/p')
+
+if [ "$SIMULATOR_STATE" != "Booted" ]; then
+  echo "🚀 Booting simulator..."
+  xcrun simctl boot "${SIMULATOR_UDID}"
+
+  # Wait for simulator to boot (max 60 seconds)
+  echo "⏳ Waiting for simulator to boot..."
+  for i in {1..60}; do
+    SIMULATOR_STATE=$(xcrun simctl list devices | grep "${SIMULATOR_UDID}" | sed -n 's/.*(\(.*\)).*/\1/p')
+    if [ "$SIMULATOR_STATE" = "Booted" ]; then
+      echo "✅ Simulator booted"
+      break
+    fi
+    sleep 1
+  done
+
+  if [ "$SIMULATOR_STATE" != "Booted" ]; then
+    echo "❌ Error: Simulator failed to boot in time"
+    exit 1
+  fi
+else
+  echo "✅ Simulator already booted"
+fi
+
+# Install the app
+echo "📲 Installing app..."
+xcrun simctl install "${SIMULATOR_UDID}" "${APP_PATH}"
+echo "✅ App installed"
+
+# Launch the app
+echo "🚀 Launching app..."
+BUNDLE_ID="expo.modules.keyevent.exampleExpo54"
+xcrun simctl launch --console-pty "${SIMULATOR_UDID}" "${BUNDLE_ID}"
+echo "✅ App launched"
+
+echo ""
+echo "✅ iOS setup complete!"
+echo "   UDID: ${SIMULATOR_UDID}"
+echo "   App: ${APP_PATH}"
+echo "   Bundle ID: ${BUNDLE_ID}"
