@@ -20,6 +20,10 @@ onFlowStart:
     commands:
       - tapOn: http://10.0.2.2:8081
 
+- extendedWaitUntil:
+    notVisible: "Bundling"
+    timeout: 40000
+
 - runFlow:
     when:
       visible: "Continue"
