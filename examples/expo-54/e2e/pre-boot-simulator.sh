@@ -9,13 +9,38 @@ echo "🔍 Pre-booting iOS simulator..."
 
 # Set device (customize as needed)
 SIMULATOR_NAME="${SIMULATOR_NAME:-iPhone 16 Pro}"
-IOS_VERSION="${IOS_VERSION:-18.2}"
-SIMULATOR_DEVICE="${SIMULATOR_NAME} (${IOS_VERSION})"
+IOS_VERSION="${IOS_VERSION:-}"  # Leave empty to auto-select any available iOS version
 
-echo "📱 Target: ${SIMULATOR_DEVICE}"
+if [ -n "$IOS_VERSION" ]; then
+  SIMULATOR_DEVICE="${SIMULATOR_NAME} (${IOS_VERSION})"
+  echo "📱 Target: ${SIMULATOR_DEVICE}"
+else
+  SIMULATOR_DEVICE="${SIMULATOR_NAME}"
+  echo "📱 Target: ${SIMULATOR_DEVICE} (any available iOS version)"
+fi
 
-# Find simulator UDID
-SIMULATOR_UDID=$(xcrun simctl list devices available | grep "${SIMULATOR_DEVICE}" | grep -o '[A-F0-9]\{8\}-[A-F0-9]\{4\}-[A-F0-9]\{4\}-[A-F0-9]\{4\}-[A-F0-9]\{12\}' | head -n 1)
+# Find simulator UDID - either exact match with version or any match by name
+if [ -n "$IOS_VERSION" ]; then
+  # Match by iOS version section and device name
+  # Use awk to find devices under the correct iOS version section
+  SIMULATOR_UDID=$(xcrun simctl list devices available | awk -v ios="$IOS_VERSION" -v device="$SIMULATOR_NAME" '
+    /^-- iOS/ {
+      current_ios = $0
+      gsub(/^-- iOS /, "", current_ios)
+      gsub(/ --$/, "", current_ios)
+    }
+    current_ios == ios && $0 ~ device {
+      match($0, /[A-F0-9]{8}-[A-F0-9]{4}-[A-F0-9]{4}-[A-F0-9]{4}-[A-F0-9]{12}/)
+      if (RSTART > 0) {
+        print substr($0, RSTART, RLENGTH)
+        exit
+      }
+    }
+  ')
+else
+  # Match by name only (any iOS version)
+  SIMULATOR_UDID=$(xcrun simctl list devices available | grep "${SIMULATOR_NAME}" | grep -o '[A-F0-9]\{8\}-[A-F0-9]\{4\}-[A-F0-9]\{4\}-[A-F0-9]\{4\}-[A-F0-9]\{12\}' | head -n 1)
+fi
 
 if [ -z "$SIMULATOR_UDID" ]; then
   echo "⚠️  Warning: Could not find simulator '${SIMULATOR_DEVICE}'"
