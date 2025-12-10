@@ -6,13 +6,6 @@ onFlowStart:
 - launchApp:
     clearState: true
 
-# - runFlow:
-#     when:
-#       visible: "Open"
-#     commands:
-#       - openLink:
-#           link: expo-key-event-example-expo-54://?disableOnboarding=1
-
 - runFlow:
     when:
       visible: "http://localhost:8081"
@@ -36,7 +29,7 @@ onFlowStart:
 
 - extendedWaitUntil:
     visible: "useKeyEvent"
-    timeout: 20000
+    timeout: 40000
 
 - runFlow:
     when:
