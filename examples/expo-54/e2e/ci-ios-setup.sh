@@ -7,8 +7,8 @@ set -e
 echo "🔨 Building iOS app..."
 
 # Set device and OS version (customize as needed)
-SIMULATOR_NAME="${SIMULATOR_NAME:-iPhone 16 Pro}"
-IOS_VERSION="${IOS_VERSION:-18.2}"
+SIMULATOR_NAME="${SIMULATOR_NAME:-Bitrise iOS default}"
+IOS_VERSION="${IOS_VERSION:-18.4}"
 SIMULATOR_DEVICE="${SIMULATOR_NAME} (${IOS_VERSION})"
 
 # Build configuration
