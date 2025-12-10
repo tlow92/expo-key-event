@@ -14,17 +14,27 @@ IOS_VERSION="${IOS_VERSION:-}"  # Leave empty to auto-select any available iOS v
 CONFIGURATION="${CONFIGURATION:-Debug}"
 SCHEME="${SCHEME:-expokeyeventexampleexpo54}"
 
-# Build destination string based on whether iOS version is specified
-if [ -n "$IOS_VERSION" ]; then
-  SIMULATOR_DEVICE="${SIMULATOR_NAME} (${IOS_VERSION})"
-  XCODE_DESTINATION="platform=iOS Simulator,name=${SIMULATOR_NAME},OS=${IOS_VERSION}"
-  echo "📱 Target simulator: ${SIMULATOR_DEVICE}"
-else
-  SIMULATOR_DEVICE="${SIMULATOR_NAME}"
-  XCODE_DESTINATION="platform=iOS Simulator,name=${SIMULATOR_NAME}"
-  echo "📱 Target simulator: ${SIMULATOR_DEVICE} (any available iOS version)"
+# If IOS_VERSION is not specified, detect the first available iOS version for the device
+if [ -z "$IOS_VERSION" ]; then
+  echo "🔍 Auto-detecting iOS version for ${SIMULATOR_NAME}..."
+
+  # Find the first available iOS version that has this device
+  IOS_VERSION=$(xcrun simctl list devices | grep -B 1 "${SIMULATOR_NAME}" | grep "^-- iOS" | head -n 1 | sed 's/^-- iOS \(.*\) --$/\1/')
+
+  if [ -z "$IOS_VERSION" ]; then
+    echo "❌ Error: Could not auto-detect iOS version for ${SIMULATOR_NAME}"
+    echo "Available devices:"
+    xcrun simctl list devices
+    exit 1
+  fi
+
+  echo "✅ Auto-detected iOS version: ${IOS_VERSION}"
 fi
 
+# Build destination string
+SIMULATOR_DEVICE="${SIMULATOR_NAME} (${IOS_VERSION})"
+XCODE_DESTINATION="platform=iOS Simulator,name=${SIMULATOR_NAME},OS=${IOS_VERSION}"
+echo "📱 Target simulator: ${SIMULATOR_DEVICE}"
 echo "🔧 Configuration: ${CONFIGURATION}"
 
 # Build the app using xcodebuild directly
@@ -54,38 +64,28 @@ echo "✅ Built app at: ${APP_PATH}"
 
 # Get or create simulator
 echo "🔍 Finding simulator..."
+echo "Searching for: ${SIMULATOR_NAME} with iOS ${IOS_VERSION}"
 
-# Search for simulator - either exact match with version or any match by name
-if [ -n "$IOS_VERSION" ]; then
-  echo "Searching for: ${SIMULATOR_NAME} with iOS ${IOS_VERSION}"
-
-  # Match by iOS version section and device name
-  # First, try without 'available' filter as it might be the issue
-  SIMULATOR_UDID=$(xcrun simctl list devices | awk -v ios="$IOS_VERSION" -v device="$SIMULATOR_NAME" '
-    /^-- iOS/ {
-      current_ios = $0
-      gsub(/^-- iOS /, "", current_ios)
-      gsub(/ --$/, "", current_ios)
+# Match by iOS version section and device name
+SIMULATOR_UDID=$(xcrun simctl list devices | awk -v ios="$IOS_VERSION" -v device="$SIMULATOR_NAME" '
+  /^-- iOS/ {
+    current_ios = $0
+    gsub(/^-- iOS /, "", current_ios)
+    gsub(/ --$/, "", current_ios)
+  }
+  current_ios == ios && $0 ~ device && $0 ~ /Shutdown|Booted/ {
+    match($0, /[A-F0-9]{8}-[A-F0-9]{4}-[A-F0-9]{4}-[A-F0-9]{4}-[A-F0-9]{12}/)
+    if (RSTART > 0) {
+      print substr($0, RSTART, RLENGTH)
+      exit
     }
-    current_ios == ios && $0 ~ device && $0 ~ /Shutdown|Booted/ {
-      match($0, /[A-F0-9]{8}-[A-F0-9]{4}-[A-F0-9]{4}-[A-F0-9]{4}-[A-F0-9]{12}/)
-      if (RSTART > 0) {
-        print substr($0, RSTART, RLENGTH)
-        exit
-      }
-    }
-  ')
+  }
+')
 
-  # Debug output
-  if [ -z "$SIMULATOR_UDID" ]; then
-    echo "⚠️  awk search failed, trying alternative method..."
-    # Alternative: parse line by line
-    SIMULATOR_UDID=$(xcrun simctl list devices | grep -A 20 "-- iOS ${IOS_VERSION} --" | grep "${SIMULATOR_NAME}" | grep -o '[A-F0-9]\{8\}-[A-F0-9]\{4\}-[A-F0-9]\{4\}-[A-F0-9]\{4\}-[A-F0-9]\{12\}' | head -n 1)
-  fi
-else
-  echo "Searching for: ${SIMULATOR_NAME} (any iOS version)"
-  # Match by name only (any iOS version)
-  SIMULATOR_UDID=$(xcrun simctl list devices | grep "${SIMULATOR_NAME}" | grep -o '[A-F0-9]\{8\}-[A-F0-9]\{4\}-[A-F0-9]\{4\}-[A-F0-9]\{4\}-[A-F0-9]\{12\}' | head -n 1)
+# Fallback: if awk search failed, try alternative method
+if [ -z "$SIMULATOR_UDID" ]; then
+  echo "⚠️  awk search failed, trying alternative method..."
+  SIMULATOR_UDID=$(xcrun simctl list devices | grep -A 20 "-- iOS ${IOS_VERSION} --" | grep "${SIMULATOR_NAME}" | grep -o '[A-F0-9]\{8\}-[A-F0-9]\{4\}-[A-F0-9]\{4\}-[A-F0-9]\{4\}-[A-F0-9]\{12\}' | head -n 1)
 fi
 
 if [ -z "$SIMULATOR_UDID" ]; then
