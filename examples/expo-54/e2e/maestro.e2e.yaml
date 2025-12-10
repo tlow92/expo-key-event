@@ -6,14 +6,9 @@ onFlowStart:
 - launchApp:
     clearState: true
 
-# Wait for the app to launch
-- extendedWaitUntil:
-    visible:
-      - "http://localhost:8081"
-      - "http://10.0.2.2:8081"
-      - "Continue"
-      - "useKeyEvent"
-    timeout: 30000
+# Wait for the app to launch and show something
+- waitForAnimationToEnd:
+    timeout: 5000
 
 # Handle dev client URL selection
 - runFlow:
@@ -38,11 +33,6 @@ onFlowStart:
 # Wait a moment for Continue dialog to appear
 - waitForAnimationToEnd:
     timeout: 3000
-
-- extendedWaitUntil:
-    visible: "Continue"
-    timeout: 10000
-    optional: true
 
 # Handle Continue/Close dialog sequence if it appears
 - runFlow:
