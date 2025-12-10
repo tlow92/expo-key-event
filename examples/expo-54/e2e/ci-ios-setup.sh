@@ -57,15 +57,17 @@ echo "🔍 Finding simulator..."
 
 # Search for simulator - either exact match with version or any match by name
 if [ -n "$IOS_VERSION" ]; then
+  echo "Searching for: ${SIMULATOR_NAME} with iOS ${IOS_VERSION}"
+
   # Match by iOS version section and device name
-  # Use awk to find devices under the correct iOS version section
-  SIMULATOR_UDID=$(xcrun simctl list devices available | awk -v ios="$IOS_VERSION" -v device="$SIMULATOR_NAME" '
+  # First, try without 'available' filter as it might be the issue
+  SIMULATOR_UDID=$(xcrun simctl list devices | awk -v ios="$IOS_VERSION" -v device="$SIMULATOR_NAME" '
     /^-- iOS/ {
       current_ios = $0
       gsub(/^-- iOS /, "", current_ios)
       gsub(/ --$/, "", current_ios)
     }
-    current_ios == ios && $0 ~ device {
+    current_ios == ios && $0 ~ device && $0 ~ /Shutdown|Booted/ {
       match($0, /[A-F0-9]{8}-[A-F0-9]{4}-[A-F0-9]{4}-[A-F0-9]{4}-[A-F0-9]{12}/)
       if (RSTART > 0) {
         print substr($0, RSTART, RLENGTH)
@@ -73,15 +75,28 @@ if [ -n "$IOS_VERSION" ]; then
       }
     }
   ')
+
+  # Debug output
+  if [ -z "$SIMULATOR_UDID" ]; then
+    echo "⚠️  awk search failed, trying alternative method..."
+    # Alternative: parse line by line
+    SIMULATOR_UDID=$(xcrun simctl list devices | grep -A 20 "-- iOS ${IOS_VERSION} --" | grep "${SIMULATOR_NAME}" | grep -o '[A-F0-9]\{8\}-[A-F0-9]\{4\}-[A-F0-9]\{4\}-[A-F0-9]\{4\}-[A-F0-9]\{12\}' | head -n 1)
+  fi
 else
+  echo "Searching for: ${SIMULATOR_NAME} (any iOS version)"
   # Match by name only (any iOS version)
-  SIMULATOR_UDID=$(xcrun simctl list devices available | grep "${SIMULATOR_NAME}" | grep -o '[A-F0-9]\{8\}-[A-F0-9]\{4\}-[A-F0-9]\{4\}-[A-F0-9]\{4\}-[A-F0-9]\{12\}' | head -n 1)
+  SIMULATOR_UDID=$(xcrun simctl list devices | grep "${SIMULATOR_NAME}" | grep -o '[A-F0-9]\{8\}-[A-F0-9]\{4\}-[A-F0-9]\{4\}-[A-F0-9]\{4\}-[A-F0-9]\{12\}' | head -n 1)
 fi
 
 if [ -z "$SIMULATOR_UDID" ]; then
   echo "❌ Error: Could not find simulator matching '${SIMULATOR_DEVICE}'"
+  echo ""
+  echo "Debug info:"
+  echo "  SIMULATOR_NAME='${SIMULATOR_NAME}'"
+  echo "  IOS_VERSION='${IOS_VERSION}'"
+  echo ""
   echo "Available simulators:"
-  xcrun simctl list devices available
+  xcrun simctl list devices
   exit 1
 fi
 
