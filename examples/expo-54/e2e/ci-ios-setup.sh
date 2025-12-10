@@ -136,7 +136,14 @@ echo "✅ App installed"
 # Launch the app
 echo "🚀 Launching app..."
 BUNDLE_ID="expo.modules.keyevent.exampleExpo54"
-xcrun simctl launch --console-pty "${SIMULATOR_UDID}" "${BUNDLE_ID}"
+
+# Launch without blocking (remove --console-pty to prevent hanging)
+# The app will run in background and Metro will connect to it
+xcrun simctl launch "${SIMULATOR_UDID}" "${BUNDLE_ID}" > /dev/null 2>&1
+
+# Give the app a moment to initialize
+sleep 2
+
 echo "✅ App launched"
 
 echo ""
@@ -144,3 +151,6 @@ echo "✅ iOS setup complete!"
 echo "   UDID: ${SIMULATOR_UDID}"
 echo "   App: ${APP_PATH}"
 echo "   Bundle ID: ${BUNDLE_ID}"
+echo ""
+echo "The app is now running in the simulator."
+echo "Metro bundler should be started next to serve the JavaScript bundle."
