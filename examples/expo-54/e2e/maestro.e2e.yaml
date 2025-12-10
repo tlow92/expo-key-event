@@ -6,6 +6,16 @@ onFlowStart:
 - launchApp:
     clearState: true
 
+# Wait for the app to launch
+- extendedWaitUntil:
+    visible:
+      - "http://localhost:8081"
+      - "http://10.0.2.2:8081"
+      - "Continue"
+      - "useKeyEvent"
+    timeout: 30000
+
+# Handle dev client URL selection
 - runFlow:
     when:
       visible: "http://localhost:8081"
@@ -20,20 +30,41 @@ onFlowStart:
     commands:
       - tapOn: http://10.0.2.2:8081
 
+# Wait for Metro bundling to complete
 - extendedWaitUntil:
     notVisible: "Bundling"
-    timeout: 40000
+    timeout: 60000
 
+# Wait a moment for Continue dialog to appear
+- waitForAnimationToEnd:
+    timeout: 3000
+
+- extendedWaitUntil:
+    visible: "Continue"
+    timeout: 10000
+    optional: true
+
+# Handle Continue/Close dialog sequence if it appears
 - runFlow:
     when:
       visible: "Continue"
     commands:
       - tapOn: Continue
-      - tapOn: Close
+      - waitForAnimationToEnd:
+          timeout: 2000
 
+- runFlow:
+    when:
+      visible: "Close"
+    commands:
+      - tapOn: Close
+      - waitForAnimationToEnd:
+          timeout: 2000
+
+# Wait for the main screen to appear
 - extendedWaitUntil:
     visible: "useKeyEvent"
-    timeout: 40000
+    timeout: 30000
 
 - runFlow:
     when:
