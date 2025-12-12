@@ -5,6 +5,13 @@ set -e  # Exit on any error
 REPORT_DIR="e2e/reports"
 mkdir -p "$REPORT_DIR"
 
+# Check if Maestro is installed
+if ! command -v maestro &> /dev/null; then
+    echo "==> [Android] Maestro not found. Installing Maestro..."
+    curl -fsSL "https://get.maestro.mobile.dev" | bash
+    export PATH="$PATH:$HOME/.maestro/bin"
+fi
+
 # Check if any Android devices/emulators are available
 echo "==> [Android] Checking for devices..."
 DEVICES=$(adb devices | grep -v "List of devices" | grep "device$" | wc -l)

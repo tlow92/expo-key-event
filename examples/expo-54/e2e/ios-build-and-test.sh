@@ -5,6 +5,13 @@ set -e  # Exit on any error
 REPORT_DIR="e2e/reports"
 mkdir -p "$REPORT_DIR"
 
+# Check if Maestro is installed
+if ! command -v maestro &> /dev/null; then
+    echo "==> [iOS] Maestro not found. Installing Maestro..."
+    curl -fsSL "https://get.maestro.mobile.dev" | bash
+    export PATH="$PATH:$HOME/.maestro/bin"
+fi
+
 # Check if any iOS simulator is booted
 echo "==> [iOS] Checking for booted simulator..."
 BOOTED=$(xcrun simctl list devices | grep "Booted" | wc -l)
