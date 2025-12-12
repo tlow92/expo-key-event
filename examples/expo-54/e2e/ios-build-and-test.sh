@@ -5,6 +5,29 @@ set -e  # Exit on any error
 REPORT_DIR="e2e/reports"
 mkdir -p "$REPORT_DIR"
 
+# Check if any iOS simulator is booted
+echo "==> [iOS] Checking for booted simulator..."
+BOOTED=$(xcrun simctl list devices | grep "Booted" | wc -l)
+
+if [ "$BOOTED" -eq 0 ]; then
+    echo "==> [iOS] No simulator booted. Starting iOS simulator..."
+    maestro start-device --platform ios --os-version 18
+
+    # Wait a moment for simulator to boot
+    sleep 5
+
+    # Verify simulator is now booted
+    BOOTED=$(xcrun simctl list devices | grep "Booted" | wc -l)
+    if [ "$BOOTED" -eq 0 ]; then
+        echo "==> [iOS] Failed to start simulator. Skipping iOS tests."
+        exit 2  # Exit code 2 = skipped
+    fi
+    echo "==> [iOS] Simulator started successfully"
+else
+    echo "==> [iOS] Found booted simulator"
+fi
+echo ""
+
 echo "==> [iOS] Step 1: Running expo prebuild..."
 expo prebuild --clean
 
