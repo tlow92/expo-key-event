@@ -1,0 +1,21 @@
+url: http://localhost:8081/
+---
+- launchApp
+- inputText: "c"
+
+- assertVisible:
+    text: "PRESS"
+- assertVisible: "RELEASE"
+- assertVisible: "KeyC"
+
+- tapOn: "useKeyEventListener"
+- extendedWaitUntil:
+    visible: "useKeyEventListener"
+    timeout: 10000
+
+- inputText: "c"
+
+- assertVisible:
+    text: "PRESS"
+- assertVisible: "RELEASE"
+- assertVisible: "KeyC"

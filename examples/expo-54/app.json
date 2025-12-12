@@ -1,7 +1,7 @@
 {
   "expo": {
-    "name": "expo-key-event-example",
-    "slug": "expo-key-event-example",
+    "name": "expo-key-event-example-expo-54",
+    "slug": "expo-key-event-example-expo-54",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/icon.png",
@@ -14,17 +14,27 @@
     },
     "ios": {
       "supportsTablet": true,
-      "bundleIdentifier": "expo.modules.keyevent.example"
+      "bundleIdentifier": "expo.modules.keyevent.exampleExpo54",
+      "infoPlist": {
+        "ITSAppUsesNonExemptEncryption": false
+      }
     },
     "android": {
       "adaptiveIcon": {
         "foregroundImage": "./assets/adaptive-icon.png",
         "backgroundColor": "#ffffff"
       },
-      "package": "expo.modules.keyevent.example"
+      "edgeToEdgeEnabled": true,
+      "predictiveBackGestureEnabled": false,
+      "package": "expo.modules.keyevent.exampleExpo54"
     },
     "web": {
       "favicon": "./assets/favicon.png"
+    },
+    "extra": {
+      "eas": {
+        "projectId": "3797099d-493f-4fed-8bea-856238ee88d8"
+      }
     }
   }
 }

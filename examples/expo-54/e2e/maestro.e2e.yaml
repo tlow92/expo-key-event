@@ -1,0 +1,97 @@
+appId: expo.modules.keyevent.exampleExpo54
+name: E2E Tests for expo-key-event
+onFlowStart:
+  - runScript: maestro-utils.js
+---
+- launchApp:
+    clearState: true
+
+# Wait for the app to launch and show something
+- waitForAnimationToEnd:
+    timeout: 5000
+
+# Handle dev client URL selection
+- runFlow:
+    when:
+      visible: "http://localhost:8081"
+      platform: iOS
+    commands:
+      - tapOn: http://localhost:8081
+
+- runFlow:
+    when:
+      visible: "http://10.0.2.2:8081"
+      platform: Android
+    commands:
+      - tapOn: http://10.0.2.2:8081
+
+# Wait for Metro bundling to complete
+- extendedWaitUntil:
+    notVisible: "Bundling"
+    timeout: 60000
+
+# Wait a moment for Continue dialog to appear
+- waitForAnimationToEnd:
+    timeout: 3000
+
+# Handle Continue/Close dialog sequence if it appears
+- runFlow:
+    when:
+      visible: "Continue"
+    commands:
+      - tapOn: Continue
+      - waitForAnimationToEnd:
+          timeout: 2000
+
+- runFlow:
+    when:
+      visible: "Close"
+    commands:
+      - tapOn: Close
+      - waitForAnimationToEnd:
+          timeout: 2000
+
+# Wait for the main screen to appear
+- extendedWaitUntil:
+    visible: "useKeyEvent"
+    timeout: 30000
+
+- runFlow:
+    when:
+      platform: 'android'
+    commands:
+        - evalScript: ${output.utils.sendKeyEvent(31, maestro.platform)}
+
+- runFlow:
+    when:
+      platform: 'ios'
+    commands:
+        - evalScript: ${output.utils.sendKeyEvent(6, maestro.platform)}
+
+- assertVisible:
+    text: "PRESS"
+- assertVisible: "RELEASE"
+- assertVisible: "KeyC"
+
+# Switch to the useKeyEventListener screen
+- tapOn: "useKeyEventListener"
+- extendedWaitUntil:
+    visible: "useKeyEventListener"
+    timeout: 10000
+
+- runFlow:
+    when:
+      platform: 'android'
+    commands:
+        - evalScript: ${output.utils.sendKeyEvent(31, maestro.platform)}
+
+- runFlow:
+    when:
+      platform: 'ios'
+    commands:
+        - evalScript: ${output.utils.sendKeyEvent(6, maestro.platform)}
+
+- assertVisible:
+    text: "PRESS"
+- assertVisible: "RELEASE"
+- assertVisible: "KeyC"
