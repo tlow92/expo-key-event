@@ -5,6 +5,29 @@ set -e  # Exit on any error
 REPORT_DIR="e2e/reports"
 mkdir -p "$REPORT_DIR"
 
+# Check if any Android devices/emulators are available
+echo "==> [Android] Checking for devices..."
+DEVICES=$(adb devices | grep -v "List of devices" | grep "device$" | wc -l)
+
+if [ "$DEVICES" -eq 0 ]; then
+    echo "==> [Android] No devices found. Starting Android emulator..."
+    maestro start-device --platform android --os-version 33
+
+    # Wait a moment for device to be recognized by adb
+    sleep 15
+
+    # Verify device is now available
+    DEVICES=$(adb devices | grep -v "List of devices" | grep "device$" | wc -l)
+    if [ "$DEVICES" -eq 0 ]; then
+        echo "==> [Android] Failed to start device. Skipping Android tests."
+        exit 2  # Exit code 2 = skipped
+    fi
+    echo "==> [Android] Device started successfully"
+else
+    echo "==> [Android] Found $DEVICES device(s)"
+fi
+echo ""
+
 echo "==> [Android] Step 1: Running expo prebuild..."
 expo prebuild --clean
 
@@ -33,5 +56,13 @@ concurrently --raw --kill-others \
   "npm run start > /dev/null 2>&1" \
   "sleep 10 && maestro test e2e/maestro.e2e.yaml --format junit --output $REPORT_DIR/android-results.xml"
 
+TEST_EXIT_CODE=$?
+
 echo ""
-echo "==> [Android] Tests completed! Report: $REPORT_DIR/android-results.xml"
+if [ $TEST_EXIT_CODE -eq 0 ]; then
+    echo "==> [Android] Tests completed successfully! Report: $REPORT_DIR/android-results.xml"
+    exit 0
+else
+    echo "==> [Android] Tests failed! Report: $REPORT_DIR/android-results.xml"
+    exit 1
+fi

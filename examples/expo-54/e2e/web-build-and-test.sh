@@ -13,5 +13,13 @@ concurrently --raw --kill-others \
   "npm run start > /dev/null 2>&1" \
   "sleep 10 && maestro test e2e/browser.e2e.yaml --headless --format junit --output $REPORT_DIR/web-results.xml"
 
+TEST_EXIT_CODE=$?
+
 echo ""
-echo "==> [Web] Tests completed! Report: $REPORT_DIR/web-results.xml"
+if [ $TEST_EXIT_CODE -eq 0 ]; then
+    echo "==> [Web] Tests completed successfully! Report: $REPORT_DIR/web-results.xml"
+    exit 0
+else
+    echo "==> [Web] Tests failed! Report: $REPORT_DIR/web-results.xml"
+    exit 1
+fi

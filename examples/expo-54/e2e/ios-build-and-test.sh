@@ -39,5 +39,13 @@ concurrently --raw --kill-others \
   "npm run start > /dev/null 2>&1" \
   "sleep 10 && maestro test e2e/maestro.e2e.yaml --format junit --output $REPORT_DIR/ios-results.xml"
 
+TEST_EXIT_CODE=$?
+
 echo ""
-echo "==> [iOS] Tests completed! Report: $REPORT_DIR/ios-results.xml"
+if [ $TEST_EXIT_CODE -eq 0 ]; then
+    echo "==> [iOS] Tests completed successfully! Report: $REPORT_DIR/ios-results.xml"
+    exit 0
+else
+    echo "==> [iOS] Tests failed! Report: $REPORT_DIR/ios-results.xml"
+    exit 1
+fi

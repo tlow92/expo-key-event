@@ -16,16 +16,20 @@ echo ""
 
 # Track results
 RESULTS=""
+IOS_STATUS="SKIPPED"
+ANDROID_STATUS="SKIPPED"
+WEB_STATUS="SKIPPED"
 
 # iOS Tests
 echo "=========================================="
 echo "Running iOS Tests..."
 echo "=========================================="
-if ./e2e/ios-build-and-test.sh; then
-    RESULTS="${RESULTS}${GREEN}✓ iOS tests passed${NC}\n"
+./e2e/ios-build-and-test.sh
+if [ $? -eq 0 ]; then
+    RESULTS="${RESULTS}✓ iOS tests passed\n"
     IOS_STATUS="PASSED"
 else
-    RESULTS="${RESULTS}${RED}✗ iOS tests failed${NC}\n"
+    RESULTS="${RESULTS}✗ iOS tests failed\n"
     IOS_STATUS="FAILED"
 fi
 echo ""
@@ -34,11 +38,15 @@ echo ""
 echo "=========================================="
 echo "Running Android Tests..."
 echo "=========================================="
-if ./e2e/android-build-and-test.sh; then
-    RESULTS="${RESULTS}${GREEN}✓ Android tests passed${NC}\n"
+./e2e/android-build-and-test.sh
+if [ $? -eq 0 ]; then
+    RESULTS="${RESULTS}✓ Android tests passed\n"
     ANDROID_STATUS="PASSED"
+elif [ $? -eq 2 ]; then
+    RESULTS="${RESULTS}⊘ Android tests skipped (no device)\n"
+    ANDROID_STATUS="SKIPPED"
 else
-    RESULTS="${RESULTS}${RED}✗ Android tests failed${NC}\n"
+    RESULTS="${RESULTS}✗ Android tests failed\n"
     ANDROID_STATUS="FAILED"
 fi
 echo ""
@@ -47,11 +55,12 @@ echo ""
 echo "=========================================="
 echo "Running Web Tests..."
 echo "=========================================="
-if ./e2e/web-build-and-test.sh; then
-    RESULTS="${RESULTS}${GREEN}✓ Web tests passed${NC}\n"
+./e2e/web-build-and-test.sh
+if [ $? -eq 0 ]; then
+    RESULTS="${RESULTS}✓ Web tests passed\n"
     WEB_STATUS="PASSED"
 else
-    RESULTS="${RESULTS}${RED}✗ Web tests failed${NC}\n"
+    RESULTS="${RESULTS}✗ Web tests failed\n"
     WEB_STATUS="FAILED"
 fi
 echo ""
@@ -63,11 +72,9 @@ echo "=========================================="
 echo -e "$RESULTS"
 echo ""
 echo "Reports:"
-echo "  iOS:     $REPORT_DIR/ios-results.xml"
-echo "  Android: $REPORT_DIR/android-results.xml"
-echo "  Web:     $REPORT_DIR/web-results.xml"
-echo ""
-echo "Logs available in: $REPORT_DIR/"
+[ "$IOS_STATUS" != "SKIPPED" ] && echo "  iOS:     $REPORT_DIR/ios-results.xml"
+[ "$ANDROID_STATUS" != "SKIPPED" ] && echo "  Android: $REPORT_DIR/android-results.xml"
+[ "$WEB_STATUS" != "SKIPPED" ] && echo "  Web:     $REPORT_DIR/web-results.xml"
 echo ""
 
 # Exit with error if any tests failed
