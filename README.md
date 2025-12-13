@@ -52,6 +52,7 @@ Expo SDK >= 52
 
 ## Usage
 
+#### Basic
 Automatic listening: Key events are listened to as soon as `MyComponent` is mounted.
 
 ```tsx
@@ -65,6 +66,7 @@ export function MyComponent() {
 }
 ```
 
+#### Control listening
 Manual listening: Key events are listened to when `startListening` is called.
 
 ```tsx
@@ -88,6 +90,7 @@ export function MyComponent() {
 }
 ```
 
+#### Using event listener
 Handling state yourself: If you want to handle the state yourself or don't need the state at all, you can use the `useKeyEventListener` hook instead of the `useKeyEvent` hook.
 
 ```tsx
@@ -120,6 +123,7 @@ export function MyComponent() {
 }
 ```
 
+#### Modifier keys
 Using modifier keys: Key events include modifier key states (shift, ctrl, alt, meta) and repeat information when `captureModifiers` is enabled.
 
 ```tsx
@@ -145,6 +149,7 @@ export function MyComponent() {
 }
 ```
 
+#### Modifier key combinations
 Checking for specific key combinations:
 
 ```tsx
