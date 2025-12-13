@@ -22,6 +22,11 @@ export interface UseKeyEventOptions {
    * @default false
    */
   listenToRelease?: boolean;
+  /**
+   * Pass 'true' to capture modifier keys (shift, ctrl, alt, meta) and repeat flag
+   * @default false
+   */
+  captureModifiers?: boolean;
 }
 
 // New API - options object
@@ -67,6 +72,7 @@ function useKeyEventImpl({
   listenOnMount = true,
   preventReload = false,
   listenToRelease = false,
+  captureModifiers = false,
 }: UseKeyEventOptions) {
   const pressEvent = useEvent(ExpoKeyEventModule, "onKeyPress");
   const releaseEvent = useEvent(ExpoKeyEventModule, "onKeyRelease");
@@ -83,20 +89,44 @@ function useKeyEventImpl({
     if (!pressEvent) return null;
     const uniKey = unifyKeyCode(pressEvent.key);
     if (!preventReload && __DEV__ && uniKey === "KeyR") DevSettings.reload();
-    return {
+
+    // Build base event
+    const event: any = {
       key: uniKey,
       eventType: "press" as const,
     };
-  }, [pressEvent, preventReload]);
+
+    // Conditionally add modifiers
+    if (captureModifiers) {
+      event.shiftKey = pressEvent.shiftKey ?? false;
+      event.ctrlKey = pressEvent.ctrlKey ?? false;
+      event.altKey = pressEvent.altKey ?? false;
+      event.metaKey = pressEvent.metaKey ?? false;
+      event.repeat = pressEvent.repeat ?? false;
+    }
+
+    return event;
+  }, [pressEvent, preventReload, captureModifiers]);
 
   const keyReleaseEvent = useMemo(() => {
     if (!listenToRelease || !releaseEvent) return null;
     const uniKey = unifyKeyCode(releaseEvent.key);
-    return {
+
+    const event: any = {
       key: uniKey,
       eventType: "release" as const,
     };
-  }, [releaseEvent, listenToRelease]);
+
+    if (captureModifiers) {
+      event.shiftKey = releaseEvent.shiftKey ?? false;
+      event.ctrlKey = releaseEvent.ctrlKey ?? false;
+      event.altKey = releaseEvent.altKey ?? false;
+      event.metaKey = releaseEvent.metaKey ?? false;
+      event.repeat = releaseEvent.repeat ?? false;
+    }
+
+    return event;
+  }, [releaseEvent, listenToRelease, captureModifiers]);
 
   return {
     /**

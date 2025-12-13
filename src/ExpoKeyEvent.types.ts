@@ -1,11 +1,12 @@
-// Base event type (future-ready for modifier keys)
+// Base event type with modifier key support
 type KeyEventBase = {
   key: string;
   eventType: "press" | "release";
-  // Future: shiftKey?: boolean;
-  // Future: ctrlKey?: boolean;
-  // Future: metaKey?: boolean;
-  // Future: altKey?: boolean;
+  shiftKey?: boolean;
+  ctrlKey?: boolean;
+  metaKey?: boolean;
+  altKey?: boolean;
+  repeat?: boolean;
 };
 
 // Event type for key press (unchanged for backward compatibility)

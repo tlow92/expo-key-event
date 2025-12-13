@@ -7,14 +7,24 @@ type DisplayedKey = {
   id: string;
   keyCode: string;
   eventType: "press" | "release";
+  shiftKey?: boolean;
+  ctrlKey?: boolean;
+  altKey?: boolean;
+  metaKey?: boolean;
+  repeat?: boolean;
 };
 
 export function KeyEventDisplay() {
   const [automaticControl, setAutomaticControl] = useState(true);
   const [listening, setListening] = useState(false);
   const [listenToRelease, setListenToRelease] = useState(true);
+  const [captureModifiers, setCaptureModifiers] = useState(false);
   const { keyEvent, keyReleaseEvent, startListening, stopListening } =
-    useKeyEvent({ listenOnMount: automaticControl, listenToRelease });
+    useKeyEvent({
+      listenOnMount: automaticControl,
+      listenToRelease,
+      captureModifiers,
+    });
 
   const [keys, setKeys] = useState<DisplayedKey[]>([]);
 
@@ -27,6 +37,11 @@ export function KeyEventDisplay() {
           id: Math.random().toString(),
           keyCode: keyEvent.key,
           eventType: "press",
+          shiftKey: keyEvent.shiftKey,
+          ctrlKey: keyEvent.ctrlKey,
+          altKey: keyEvent.altKey,
+          metaKey: keyEvent.metaKey,
+          repeat: keyEvent.repeat,
         },
         ..._,
       ];
@@ -42,6 +57,11 @@ export function KeyEventDisplay() {
           id: Math.random().toString(),
           keyCode: keyReleaseEvent.key,
           eventType: "release",
+          shiftKey: keyReleaseEvent.shiftKey,
+          ctrlKey: keyReleaseEvent.ctrlKey,
+          altKey: keyReleaseEvent.altKey,
+          metaKey: keyReleaseEvent.metaKey,
+          repeat: keyReleaseEvent.repeat,
         },
         ..._,
       ];
@@ -110,6 +130,29 @@ export function KeyEventDisplay() {
           </Text>
         </View>
       </View>
+      <View
+        style={{
+          flexDirection: "row",
+          alignItems: "center",
+          gap: 24,
+          paddingHorizontal: 16,
+        }}
+      >
+        <Switch
+          onValueChange={() => {
+            setCaptureModifiers((_) => !_);
+          }}
+          value={captureModifiers}
+        />
+        <View style={{ flex: 1 }}>
+          <Text style={{ fontSize: 18, fontWeight: "500" }}>
+            Capture modifier keys
+          </Text>
+          <Text style={{ fontSize: 14, color: "#666" }}>
+            Shows shift, ctrl, alt, meta, and repeat
+          </Text>
+        </View>
+      </View>
       {automaticControl === false && (
         <View style={{ alignSelf: "center" }}>
           <Button
@@ -130,6 +173,13 @@ export function KeyEventDisplay() {
           const isPress = item.eventType === "press";
           const isPressColor = "#4CAF50";
           const isReleaseColor = "#FF5722";
+
+          const modifiers = [];
+          if (item.shiftKey) modifiers.push("⇧");
+          if (item.ctrlKey) modifiers.push("⌃");
+          if (item.altKey) modifiers.push("⌥");
+          if (item.metaKey) modifiers.push("⌘");
+          if (item.repeat) modifiers.push("🔁");
 
           return (
             <Animated.View
@@ -165,6 +215,11 @@ export function KeyEventDisplay() {
               >
                 {item.keyCode}
               </Text>
+              {modifiers.length > 0 && (
+                <Text style={{ fontSize: 20, color: "#666" }}>
+                  {modifiers.join(" ")}
+                </Text>
+              )}
             </Animated.View>
           );
         }}

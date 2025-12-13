@@ -19,6 +19,11 @@ export interface UseKeyEventOptions {
    * @default false
    */
   listenToRelease?: boolean;
+  /**
+   * Pass 'true' to capture modifier keys (shift, ctrl, alt, meta) and repeat flag
+   * @default false
+   */
+  captureModifiers?: boolean;
 }
 
 // New API - options object
@@ -64,18 +69,51 @@ function useKeyEventImpl({
   listenOnMount = true,
   preventReload = false,
   listenToRelease = false,
+  captureModifiers = false,
 }: UseKeyEventOptions) {
   const [keyEvent, setKeyEvent] = useState<KeyPressEvent | null>(null);
   const [keyReleaseEvent, setKeyReleaseEvent] =
     useState<KeyReleaseEvent | null>(null);
 
-  const onKeyDown = useCallback((event: KeyboardEvent) => {
-    setKeyEvent({ key: event.code, eventType: "press" });
-  }, []);
+  const onKeyDown = useCallback(
+    (event: KeyboardEvent) => {
+      const pressEvent: any = {
+        key: event.code,
+        eventType: "press",
+      };
 
-  const onKeyUp = useCallback((event: KeyboardEvent) => {
-    setKeyReleaseEvent({ key: event.code, eventType: "release" });
-  }, []);
+      if (captureModifiers) {
+        pressEvent.shiftKey = event.shiftKey;
+        pressEvent.ctrlKey = event.ctrlKey;
+        pressEvent.altKey = event.altKey;
+        pressEvent.metaKey = event.metaKey;
+        pressEvent.repeat = event.repeat;
+      }
+
+      setKeyEvent(pressEvent);
+    },
+    [captureModifiers],
+  );
+
+  const onKeyUp = useCallback(
+    (event: KeyboardEvent) => {
+      const releaseEvent: any = {
+        key: event.code,
+        eventType: "release",
+      };
+
+      if (captureModifiers) {
+        releaseEvent.shiftKey = event.shiftKey;
+        releaseEvent.ctrlKey = event.ctrlKey;
+        releaseEvent.altKey = event.altKey;
+        releaseEvent.metaKey = event.metaKey;
+        releaseEvent.repeat = false; // Key up events are never repeats
+      }
+
+      setKeyReleaseEvent(releaseEvent);
+    },
+    [captureModifiers],
+  );
 
   const startListening = useCallback(() => {
     addEventListener("keydown", onKeyDown);

@@ -14,16 +14,26 @@ public class ExpoKeyEventModule: Module {
         // If we haven't already added the listener view, create one and add it.
         if self.keyboardListenerView == nil {
           let listenerView = KeyboardListenerView(
-            onKeyPress: { key in
+            onKeyPress: { key, shift, ctrl, alt, meta, rep in
               self.sendEvent("onKeyPress", [
                   "key": key,
-                  "eventType": "press"
+                  "eventType": "press",
+                  "shiftKey": shift,
+                  "ctrlKey": ctrl,
+                  "altKey": alt,
+                  "metaKey": meta,
+                  "repeat": rep
               ])
             },
-            onKeyRelease: { key in
+            onKeyRelease: { key, shift, ctrl, alt, meta, rep in
               self.sendEvent("onKeyRelease", [
                   "key": key,
-                  "eventType": "release"
+                  "eventType": "release",
+                  "shiftKey": shift,
+                  "ctrlKey": ctrl,
+                  "altKey": alt,
+                  "metaKey": meta,
+                  "repeat": rep
               ])
             }
           )
@@ -62,10 +72,10 @@ public class ExpoKeyEventModule: Module {
 /// A custom hidden view that can become first responder and intercept hardware key events.
 #if os(macOS)
   class KeyboardListenerView: NSView {
-    private let onKeyPress: (String) -> Void
-    private let onKeyRelease: (String) -> Void
+    private let onKeyPress: (String, Bool, Bool, Bool, Bool, Bool) -> Void
+    private let onKeyRelease: (String, Bool, Bool, Bool, Bool, Bool) -> Void
 
-    init(onKeyPress: @escaping (String) -> Void, onKeyRelease: @escaping (String) -> Void) {
+    init(onKeyPress: @escaping (String, Bool, Bool, Bool, Bool, Bool) -> Void, onKeyRelease: @escaping (String, Bool, Bool, Bool, Bool, Bool) -> Void) {
       self.onKeyPress = onKeyPress
       self.onKeyRelease = onKeyRelease
       super.init(frame: .zero)
@@ -83,19 +93,36 @@ public class ExpoKeyEventModule: Module {
     }
 
     override func keyDown(with event: NSEvent) {
-      onKeyPress(String(event.keyCode))
+      let modifiers = event.modifierFlags
+      onKeyPress(
+        String(event.keyCode),
+        modifiers.contains(.shift),
+        modifiers.contains(.control),
+        modifiers.contains(.option),
+        modifiers.contains(.command),
+        event.isARepeat
+      )
     }
 
     override func keyUp(with event: NSEvent) {
-      onKeyRelease(String(event.keyCode))
+      let modifiers = event.modifierFlags
+      onKeyRelease(
+        String(event.keyCode),
+        modifiers.contains(.shift),
+        modifiers.contains(.control),
+        modifiers.contains(.option),
+        modifiers.contains(.command),
+        false  // Key up events are never repeats
+      )
     }
   }
 #else
   class KeyboardListenerView: UIView {
-    private let onKeyPress: (String) -> Void
-    private let onKeyRelease: (String) -> Void
+    private let onKeyPress: (String, Bool, Bool, Bool, Bool, Bool) -> Void
+    private let onKeyRelease: (String, Bool, Bool, Bool, Bool, Bool) -> Void
+    private var pressedKeys = Set<Int>()
 
-    init(onKeyPress: @escaping (String) -> Void, onKeyRelease: @escaping (String) -> Void) {
+    init(onKeyPress: @escaping (String, Bool, Bool, Bool, Bool, Bool) -> Void, onKeyRelease: @escaping (String, Bool, Bool, Bool, Bool, Bool) -> Void) {
       self.onKeyPress = onKeyPress
       self.onKeyRelease = onKeyRelease
       super.init(frame: .zero)
@@ -115,17 +142,49 @@ public class ExpoKeyEventModule: Module {
 
     override func pressesBegan(_ presses: Set<UIPress>, with event: UIPressesEvent?) {
       super.pressesBegan(presses, with: event)
-      guard let uiKey = presses.first?.key else { return }
+      guard let press = presses.first,
+            let key = press.key else { return }
 
-      onKeyPress(String(uiKey.keyCode.rawValue))
+      let keyCode = Int(key.keyCode.rawValue)
+
+      // Check if this key is already pressed (repeat event)
+      let isRepeat = pressedKeys.contains(keyCode)
+
+      // Add to pressed keys set
+      pressedKeys.insert(keyCode)
+
+      // Get modifier flags from the key
+      let modifiers = key.modifierFlags
+      onKeyPress(
+        String(keyCode),
+        modifiers.contains(.shift),
+        modifiers.contains(.control),
+        modifiers.contains(.alternate),
+        modifiers.contains(.command),
+        isRepeat
+      )
       return
     }
 
     override func pressesEnded(_ presses: Set<UIPress>, with event: UIPressesEvent?) {
       super.pressesEnded(presses, with: event)
-      guard let uiKey = presses.first?.key else { return }
+      guard let press = presses.first,
+            let key = press.key else { return }
 
-      onKeyRelease(String(uiKey.keyCode.rawValue))
+      let keyCode = Int(key.keyCode.rawValue)
+
+      // Remove from pressed keys set
+      pressedKeys.remove(keyCode)
+
+      let modifiers = key.modifierFlags
+      onKeyRelease(
+        String(keyCode),
+        modifiers.contains(.shift),
+        modifiers.contains(.control),
+        modifiers.contains(.alternate),
+        modifiers.contains(.command),
+        false  // Key up events are never repeats
+      )
       return
     }
   }

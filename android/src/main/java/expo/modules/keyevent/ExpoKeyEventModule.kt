@@ -28,11 +28,11 @@ class ExpoKeyEventModule : Module() {
         listenerView = ExpoKeyEventView(
           context = activity,
           appContext = appContext,
-          onKeyPress = { eventData: Map<String, String> ->
+          onKeyPress = { eventData: Map<String, Any> ->
             // Send the event back to JS with eventType
             sendEvent("onKeyPress", eventData + mapOf("eventType" to "press"))
           },
-          onKeyRelease = { eventData: Map<String, String> ->
+          onKeyRelease = { eventData: Map<String, Any> ->
             // Send the event back to JS with eventType
             sendEvent("onKeyRelease", eventData + mapOf("eventType" to "release"))
           }

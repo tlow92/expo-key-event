@@ -23,6 +23,11 @@ export interface UseKeyEventListenerOptions {
    * @default false
    */
   listenToRelease?: boolean;
+  /**
+   * Pass 'true' to capture modifier keys (shift, ctrl, alt, meta) and repeat flag
+   * @default false
+   */
+  captureModifiers?: boolean;
 }
 
 // New API - listener + options object
@@ -73,24 +78,52 @@ function useKeyEventListenerImpl(
     listenOnMount = true,
     preventReload = false,
     listenToRelease = false,
+    captureModifiers = false,
   }: UseKeyEventListenerOptions,
 ) {
   const onKeyPress = useCallback(
-    ({ key }: KeyPressEvent) => {
-      const uniKey = unifyKeyCode(key);
+    (rawEvent: KeyPressEvent) => {
+      const uniKey = unifyKeyCode(rawEvent.key);
       if (!preventReload && __DEV__ && uniKey === "KeyR") DevSettings.reload();
 
-      listener({ key: uniKey, eventType: "press" });
+      const event: any = {
+        key: uniKey,
+        eventType: "press",
+      };
+
+      if (captureModifiers) {
+        event.shiftKey = rawEvent.shiftKey ?? false;
+        event.ctrlKey = rawEvent.ctrlKey ?? false;
+        event.altKey = rawEvent.altKey ?? false;
+        event.metaKey = rawEvent.metaKey ?? false;
+        event.repeat = rawEvent.repeat ?? false;
+      }
+
+      listener(event);
     },
-    [listener, preventReload],
+    [listener, preventReload, captureModifiers],
   );
 
   const onKeyRelease = useCallback(
-    ({ key }: KeyReleaseEvent) => {
-      const uniKey = unifyKeyCode(key);
-      listener({ key: uniKey, eventType: "release" });
+    (rawEvent: KeyReleaseEvent) => {
+      const uniKey = unifyKeyCode(rawEvent.key);
+
+      const event: any = {
+        key: uniKey,
+        eventType: "release",
+      };
+
+      if (captureModifiers) {
+        event.shiftKey = rawEvent.shiftKey ?? false;
+        event.ctrlKey = rawEvent.ctrlKey ?? false;
+        event.altKey = rawEvent.altKey ?? false;
+        event.metaKey = rawEvent.metaKey ?? false;
+        event.repeat = rawEvent.repeat ?? false;
+      }
+
+      listener(event);
     },
-    [listener],
+    [listener, captureModifiers],
   );
 
   useEventListener(ExpoKeyEventModule, "onKeyPress", onKeyPress);

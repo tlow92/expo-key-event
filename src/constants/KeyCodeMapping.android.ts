@@ -110,4 +110,23 @@ export const KeyCodeMapping: Record<string, string> = {
   "116": "ScrollLock",
   "117": "MetaLeft",
   "118": "MetaRight",
+
+  // ---------------------------------------------------------------------------
+  // GAMEPAD KEYS
+  // ---------------------------------------------------------------------------
+  "96": "ButtonA",
+  "97": "ButtonB",
+  "98": "ButtonC",
+  "99": "ButtonX",
+  "100": "ButtonY",
+  "101": "ButtonZ",
+  "102": "ButtonL1",
+  "103": "ButtonR1",
+  "104": "ButtonL2",
+  "105": "ButtonR2",
+  "106": "ButtonThumbL",
+  "107": "ButtonThumbR",
+  "108": "ButtonStart",
+  "109": "ButtonSelect",
+  "110": "ButtonMode",
 };

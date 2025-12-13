@@ -9,8 +9,8 @@ import expo.modules.kotlin.views.ExpoView
 class ExpoKeyEventView(
   context: Context,
   appContext: AppContext,
-  private val onKeyPress: (Map<String, String>) -> Unit,
-  private val onKeyRelease: (Map<String, String>) -> Unit
+  private val onKeyPress: (Map<String, Any>) -> Unit,
+  private val onKeyRelease: (Map<String, Any>) -> Unit
 ) : ExpoView(context, appContext) {
 
   init {
@@ -23,15 +23,31 @@ class ExpoKeyEventView(
   }
 
   override fun onKeyDown(keyCode: Int, event: KeyEvent?): Boolean {
-    // Only process the initial key down event, ignore repeats
-    if (event?.repeatCount == 0) {
-      onKeyPress(mapOf("key" to keyCode.toString()))
+    event?.let { e ->
+      // Send all key events (including repeats) with accurate repeat flag
+      onKeyPress(mapOf(
+        "key" to keyCode.toString(),
+        "shiftKey" to e.isShiftPressed,
+        "ctrlKey" to e.isCtrlPressed,
+        "altKey" to e.isAltPressed,
+        "metaKey" to e.isMetaPressed,
+        "repeat" to (e.repeatCount > 0)
+      ))
     }
     return super.onKeyDown(keyCode, event)
   }
 
   override fun onKeyUp(keyCode: Int, event: KeyEvent?): Boolean {
-    onKeyRelease(mapOf("key" to keyCode.toString()))
+    event?.let { e ->
+      onKeyRelease(mapOf(
+        "key" to keyCode.toString(),
+        "shiftKey" to e.isShiftPressed,
+        "ctrlKey" to e.isCtrlPressed,
+        "altKey" to e.isAltPressed,
+        "metaKey" to e.isMetaPressed,
+        "repeat" to false  // Key up events are never repeats
+      ))
+    }
     return super.onKeyUp(keyCode, event)
   }
 }

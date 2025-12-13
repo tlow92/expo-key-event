@@ -18,26 +18,27 @@
     <tr>
       <td align="center">
         <strong>iOS</strong><br/>
-        <a href="https://github.com/user-attachments/assets/9bfc25cf-6b18-46f0-947e-3d982ed46fd5">
-          <img src=".github/key-event-ios.gif" alt="iOS preview" width="250" />
-        </a>
+        <img src=".github/key-event-ios.gif" alt="iOS preview" width="250" />
       </td>
       <td align="center">
         <strong>Android</strong><br/>
-        <a href="https://github.com/user-attachments/assets/b4a71bd3-6617-4ae6-98c0-60ba285c2143">
-          <img src=".github/key-event-android.gif" alt="Android preview" width="250" />
-        </a>
+        <img src=".github/key-event-android.gif" alt="Android preview" width="250" />
       </td>
       <td align="center">
         <strong>Web</strong><br/>
-        <a href="https://github.com/user-attachments/assets/469deda3-9254-4a66-b56f-bf79c7e20997">
-          <img src=".github/key-event-web.gif" alt="Web preview" width="350" />
-        </a>
+        <img src=".github/key-event-web.gif" alt="Web preview" width="350" />
       </td>
     </tr>
   </table>
 
 </div>
+
+## Supported platforms
+
+- iOS
+- Android
+- Web
+- macOS (Mac Catalyst & react-native-macos)
 
 ## Requirements
 
@@ -119,6 +120,66 @@ export function MyComponent() {
 }
 ```
 
+Using modifier keys: Key events include modifier key states (shift, ctrl, alt, meta) and repeat information when `captureModifiers` is enabled.
+
+```tsx
+import { useKeyEvent } from "expo-key-event";
+import { Text, View } from "react-native";
+
+export function MyComponent() {
+  const { keyEvent } = useKeyEvent({
+    listenOnMount: true,
+    captureModifiers: true, // Enable modifier key capture
+  });
+
+  return (
+    <View>
+      <Text>Key: {keyEvent?.key}</Text>
+      <Text>Shift: {keyEvent?.shiftKey ? "Yes" : "No"}</Text>
+      <Text>Ctrl: {keyEvent?.ctrlKey ? "Yes" : "No"}</Text>
+      <Text>Alt: {keyEvent?.altKey ? "Yes" : "No"}</Text>
+      <Text>Meta: {keyEvent?.metaKey ? "Yes" : "No"}</Text>
+      <Text>Repeat: {keyEvent?.repeat ? "Yes" : "No"}</Text>
+    </View>
+  );
+}
+```
+
+Checking for specific key combinations:
+
+```tsx
+import { useState } from "react";
+import { KeyPressEvent, useKeyEventListener } from "expo-key-event";
+import { Text } from "react-native";
+
+export function MyComponent() {
+  const [message, setMessage] = useState("");
+
+  useKeyEventListener(
+    (event: KeyPressEvent) => {
+      // Check for Cmd+S (macOS) or Ctrl+S (Windows/Linux)
+      if (event.key === "KeyS" && (event.metaKey || event.ctrlKey)) {
+        setMessage("Save shortcut pressed!");
+      }
+      // Check for Shift+Enter
+      else if (event.key === "Enter" && event.shiftKey) {
+        setMessage("New line!");
+      }
+      // Check for Alt+Arrow
+      else if (event.key === "ArrowRight" && event.altKey) {
+        setMessage("Navigate forward!");
+      }
+    },
+    {
+      listenOnMount: true,
+      captureModifiers: true, // Required to receive modifier key states
+    }
+  );
+
+  return <Text>{message}</Text>;
+}
+```
+
 <br />
 
 ## Run example app
@@ -160,9 +221,3 @@ e.g. `adb shell input keyevent 10`
 ## How it works
 
 This module translates the [Apple UIKit](https://developer.apple.com/documentation/uikit/uikeyboardhidusage) and [Android KeyEvent](https://developer.android.com/reference/android/view/KeyEvent) constants to a common set of key event types matching the ones from [Web](https://developer.mozilla.org/en-US/docs/Web/API/KeyboardEvent/code).
-
-<br />
-
-## Todo
-
-- [ ] Implement modifier key combinations similar to [web](https://developer.mozilla.org/en-US/docs/Web/API/Element/keydown_event) like altKey, ctrlKey, metaKey, shiftKey
