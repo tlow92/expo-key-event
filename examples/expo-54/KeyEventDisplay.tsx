@@ -1,6 +1,7 @@
 import { useKeyEvent } from "expo-key-event";
 import { useEffect, useState } from "react";
-import { Button, Switch, Text, View } from "react-native";
+import { Button, ScrollView, Switch, Text, TextInput, View } from "react-native";
+import { KeyboardAwareScrollView } from "react-native-keyboard-controller";
 import Animated, { FadeInLeft } from "react-native-reanimated";
 
 type DisplayedKey = {
@@ -19,12 +20,12 @@ export function KeyEventDisplay() {
   const [listening, setListening] = useState(false);
   const [listenToRelease, setListenToRelease] = useState(true);
   const [captureModifiers, setCaptureModifiers] = useState(false);
-  const { keyEvent, keyReleaseEvent, startListening, stopListening } =
-    useKeyEvent({
-      listenOnMount: automaticControl,
-      listenToRelease,
-      captureModifiers,
-    });
+  const [textInputValue, setTextInputValue] = useState("");
+  const { keyEvent, keyReleaseEvent, startListening, stopListening } = useKeyEvent({
+    listenOnMount: automaticControl,
+    listenToRelease,
+    captureModifiers,
+  });
 
   const [keys, setKeys] = useState<DisplayedKey[]>([]);
 
@@ -75,7 +76,7 @@ export function KeyEventDisplay() {
   }, [listening, automaticControl]);
 
   return (
-    <View
+    <KeyboardAwareScrollView
       style={{
         flex: 1,
         width: "100%",
@@ -84,6 +85,21 @@ export function KeyEventDisplay() {
         marginTop: 32,
       }}
     >
+      <TextInput
+        style={{
+          borderWidth: 1,
+          borderColor: "#ccc",
+          borderRadius: 8,
+          paddingVertical: 12,
+          paddingHorizontal: 16,
+          fontSize: 16,
+          backgroundColor: "#fff",
+        }}
+        placeholder="Type here to show virtual keyboard..."
+        value={textInputValue}
+        onChangeText={setTextInputValue}
+        multiline
+      />
       <View
         style={{
           flexDirection: "row",
@@ -145,9 +161,7 @@ export function KeyEventDisplay() {
           value={captureModifiers}
         />
         <View style={{ flex: 1 }}>
-          <Text style={{ fontSize: 18, fontWeight: "500" }}>
-            Capture modifier keys
-          </Text>
+          <Text style={{ fontSize: 18, fontWeight: "500" }}>Capture modifier keys</Text>
           <Text style={{ fontSize: 14, color: "#666" }}>
             Shows shift, ctrl, alt, meta, and repeat
           </Text>
@@ -161,69 +175,59 @@ export function KeyEventDisplay() {
           />
         </View>
       )}
-      <Animated.FlatList
-        contentContainerStyle={{
-          width: "100%",
-          justifyContent: "center",
-          alignItems: "center",
-        }}
-        data={keys}
-        keyExtractor={(item) => item.id}
-        renderItem={({ item, index }) => {
-          const isPress = item.eventType === "press";
-          const isPressColor = "#4CAF50";
-          const isReleaseColor = "#FF5722";
 
-          const modifiers = [];
-          if (item.shiftKey) modifiers.push("⇧");
-          if (item.ctrlKey) modifiers.push("⌃");
-          if (item.altKey) modifiers.push("⌥");
-          if (item.metaKey) modifiers.push("⌘");
-          if (item.repeat) modifiers.push("🔁");
+      {keys.map((item, index) => {
+        const isPress = item.eventType === "press";
+        const isPressColor = "#4CAF50";
+        const isReleaseColor = "#FF5722";
 
-          return (
-            <Animated.View
+        const modifiers = [];
+        if (item.shiftKey) modifiers.push("⇧");
+        if (item.ctrlKey) modifiers.push("⌃");
+        if (item.altKey) modifiers.push("⌥");
+        if (item.metaKey) modifiers.push("⌘");
+        if (item.repeat) modifiers.push("🔁");
+
+        return (
+          <Animated.View
+            key={item.id}
+            style={{
+              flexDirection: "row",
+              alignItems: "center",
+              alignSelf: "center",
+              gap: 12,
+              paddingVertical: 4,
+            }}
+            entering={FadeInLeft}
+          >
+            <View
               style={{
-                flexDirection: "row",
-                alignItems: "center",
-                gap: 12,
+                width: 80,
                 paddingVertical: 4,
+                paddingHorizontal: 8,
+                backgroundColor: isPress ? isPressColor : isReleaseColor,
+                borderRadius: 4,
+                alignItems: "center",
               }}
-              entering={FadeInLeft}
             >
-              <View
-                style={{
-                  width: 80,
-                  paddingVertical: 4,
-                  paddingHorizontal: 8,
-                  backgroundColor: isPress ? isPressColor : isReleaseColor,
-                  borderRadius: 4,
-                  alignItems: "center",
-                }}
-              >
-                <Text
-                  style={{ fontSize: 12, color: "white", fontWeight: "600" }}
-                >
-                  {isPress ? "PRESS" : "RELEASE"}
-                </Text>
-              </View>
-              <Text
-                style={[
-                  index === 0 ? { fontWeight: "bold" } : {},
-                  { fontSize: 24, minWidth: 100 },
-                ]}
-              >
-                {item.keyCode}
+              <Text style={{ fontSize: 12, color: "white", fontWeight: "600" }}>
+                {isPress ? "PRESS" : "RELEASE"}
               </Text>
-              {modifiers.length > 0 && (
-                <Text style={{ fontSize: 20, color: "#666" }}>
-                  {modifiers.join(" ")}
-                </Text>
-              )}
-            </Animated.View>
-          );
-        }}
-      />
-    </View>
+            </View>
+            <Text
+              style={[
+                index === 0 ? { fontWeight: "bold" } : {},
+                { fontSize: 24, minWidth: 100 },
+              ]}
+            >
+              {item.keyCode}
+            </Text>
+            {modifiers.length > 0 && (
+              <Text style={{ fontSize: 20, color: "#666" }}>{modifiers.join(" ")}</Text>
+            )}
+          </Animated.View>
+        );
+      })}
+    </KeyboardAwareScrollView>
   );
 }

@@ -40,8 +40,7 @@ class ExpoKeyEventModule : Module() {
 
         rootView.addView(listenerView)
 
-        // Make sure our view actually gets focus
-        listenerView?.requestFocus()
+        // No need to request focus - we intercept at window level via KeyEventInterceptor
       }
 
       return@Function null
