@@ -55,3 +55,9 @@ yarn-error.log
 
 # Expo
 .expo/*
+
+
+CLAUDE.md
+GEMINI.md
+.claude
+.gemini

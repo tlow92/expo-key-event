@@ -86,18 +86,20 @@ function useKeyEventListenerImpl(
       const uniKey = unifyKeyCode(rawEvent.key);
       if (!preventReload && __DEV__ && uniKey === "KeyR") DevSettings.reload();
 
-      const event: any = {
+      // Build properly typed event
+      const event: KeyPressEvent = {
         key: uniKey,
-        eventType: "press",
+        character: rawEvent.character,
+        eventType: "press" as const,
+        // Conditionally include modifiers
+        ...(captureModifiers && {
+          shiftKey: rawEvent.shiftKey ?? false,
+          ctrlKey: rawEvent.ctrlKey ?? false,
+          altKey: rawEvent.altKey ?? false,
+          metaKey: rawEvent.metaKey ?? false,
+          repeat: rawEvent.repeat ?? false,
+        }),
       };
-
-      if (captureModifiers) {
-        event.shiftKey = rawEvent.shiftKey ?? false;
-        event.ctrlKey = rawEvent.ctrlKey ?? false;
-        event.altKey = rawEvent.altKey ?? false;
-        event.metaKey = rawEvent.metaKey ?? false;
-        event.repeat = rawEvent.repeat ?? false;
-      }
 
       listener(event);
     },
@@ -108,18 +110,20 @@ function useKeyEventListenerImpl(
     (rawEvent: KeyReleaseEvent) => {
       const uniKey = unifyKeyCode(rawEvent.key);
 
-      const event: any = {
+      // Build properly typed event
+      const event: KeyReleaseEvent = {
         key: uniKey,
-        eventType: "release",
+        character: rawEvent.character,
+        eventType: "release" as const,
+        // Conditionally include modifiers
+        ...(captureModifiers && {
+          shiftKey: rawEvent.shiftKey ?? false,
+          ctrlKey: rawEvent.ctrlKey ?? false,
+          altKey: rawEvent.altKey ?? false,
+          metaKey: rawEvent.metaKey ?? false,
+          repeat: rawEvent.repeat ?? false,
+        }),
       };
-
-      if (captureModifiers) {
-        event.shiftKey = rawEvent.shiftKey ?? false;
-        event.ctrlKey = rawEvent.ctrlKey ?? false;
-        event.altKey = rawEvent.altKey ?? false;
-        event.metaKey = rawEvent.metaKey ?? false;
-        event.repeat = rawEvent.repeat ?? false;
-      }
 
       listener(event);
     },

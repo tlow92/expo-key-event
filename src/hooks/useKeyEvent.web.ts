@@ -77,18 +77,20 @@ function useKeyEventImpl({
 
   const onKeyDown = useCallback(
     (event: KeyboardEvent) => {
-      const pressEvent: any = {
+      // Build properly typed event
+      const pressEvent: KeyPressEvent = {
         key: event.code,
-        eventType: "press",
+        character: event.key.length === 1 ? event.key : undefined,
+        eventType: "press" as const,
+        // Conditionally include modifiers
+        ...(captureModifiers && {
+          shiftKey: event.shiftKey,
+          ctrlKey: event.ctrlKey,
+          altKey: event.altKey,
+          metaKey: event.metaKey,
+          repeat: event.repeat,
+        }),
       };
-
-      if (captureModifiers) {
-        pressEvent.shiftKey = event.shiftKey;
-        pressEvent.ctrlKey = event.ctrlKey;
-        pressEvent.altKey = event.altKey;
-        pressEvent.metaKey = event.metaKey;
-        pressEvent.repeat = event.repeat;
-      }
 
       setKeyEvent(pressEvent);
     },
@@ -97,18 +99,20 @@ function useKeyEventImpl({
 
   const onKeyUp = useCallback(
     (event: KeyboardEvent) => {
-      const releaseEvent: any = {
+      // Build properly typed event
+      const releaseEvent: KeyReleaseEvent = {
         key: event.code,
-        eventType: "release",
+        character: event.key.length === 1 ? event.key : undefined,
+        eventType: "release" as const,
+        // Conditionally include modifiers
+        ...(captureModifiers && {
+          shiftKey: event.shiftKey,
+          ctrlKey: event.ctrlKey,
+          altKey: event.altKey,
+          metaKey: event.metaKey,
+          repeat: false, // Key up events are never repeats
+        }),
       };
-
-      if (captureModifiers) {
-        releaseEvent.shiftKey = event.shiftKey;
-        releaseEvent.ctrlKey = event.ctrlKey;
-        releaseEvent.altKey = event.altKey;
-        releaseEvent.metaKey = event.metaKey;
-        releaseEvent.repeat = false; // Key up events are never repeats
-      }
 
       setKeyReleaseEvent(releaseEvent);
     },

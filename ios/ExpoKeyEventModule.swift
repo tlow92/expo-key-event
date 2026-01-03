@@ -14,9 +14,10 @@ public class ExpoKeyEventModule: Module {
         // If we haven't already added the listener view, create one and add it.
         if self.keyboardListenerView == nil {
           let listenerView = KeyboardListenerView(
-            onKeyPress: { key, shift, ctrl, alt, meta, rep in
+            onKeyPress: { key, shift, ctrl, alt, meta, rep, char in
               self.sendEvent("onKeyPress", [
                   "key": key,
+                  "character": char as Any,
                   "eventType": "press",
                   "shiftKey": shift,
                   "ctrlKey": ctrl,
@@ -25,9 +26,10 @@ public class ExpoKeyEventModule: Module {
                   "repeat": rep
               ])
             },
-            onKeyRelease: { key, shift, ctrl, alt, meta, rep in
+            onKeyRelease: { key, shift, ctrl, alt, meta, rep, char in
               self.sendEvent("onKeyRelease", [
                   "key": key,
+                  "character": char as Any,
                   "eventType": "release",
                   "shiftKey": shift,
                   "ctrlKey": ctrl,
@@ -72,10 +74,10 @@ public class ExpoKeyEventModule: Module {
 /// A custom hidden view that can become first responder and intercept hardware key events.
 #if os(macOS)
   class KeyboardListenerView: NSView {
-    private let onKeyPress: (String, Bool, Bool, Bool, Bool, Bool) -> Void
-    private let onKeyRelease: (String, Bool, Bool, Bool, Bool, Bool) -> Void
+    private let onKeyPress: (String, Bool, Bool, Bool, Bool, Bool, String?) -> Void
+    private let onKeyRelease: (String, Bool, Bool, Bool, Bool, Bool, String?) -> Void
 
-    init(onKeyPress: @escaping (String, Bool, Bool, Bool, Bool, Bool) -> Void, onKeyRelease: @escaping (String, Bool, Bool, Bool, Bool, Bool) -> Void) {
+    init(onKeyPress: @escaping (String, Bool, Bool, Bool, Bool, Bool, String?) -> Void, onKeyRelease: @escaping (String, Bool, Bool, Bool, Bool, Bool, String?) -> Void) {
       self.onKeyPress = onKeyPress
       self.onKeyRelease = onKeyRelease
       super.init(frame: .zero)
@@ -94,35 +96,39 @@ public class ExpoKeyEventModule: Module {
 
     override func keyDown(with event: NSEvent) {
       let modifiers = event.modifierFlags
+      let character = event.characters?.isEmpty == false ? event.characters : nil
       onKeyPress(
         String(event.keyCode),
         modifiers.contains(.shift),
         modifiers.contains(.control),
         modifiers.contains(.option),
         modifiers.contains(.command),
-        event.isARepeat
+        event.isARepeat,
+        character
       )
     }
 
     override func keyUp(with event: NSEvent) {
       let modifiers = event.modifierFlags
+      let character = event.characters?.isEmpty == false ? event.characters : nil
       onKeyRelease(
         String(event.keyCode),
         modifiers.contains(.shift),
         modifiers.contains(.control),
         modifiers.contains(.option),
         modifiers.contains(.command),
-        false  // Key up events are never repeats
+        false,  // Key up events are never repeats
+        character
       )
     }
   }
 #else
   class KeyboardListenerView: UIView {
-    private let onKeyPress: (String, Bool, Bool, Bool, Bool, Bool) -> Void
-    private let onKeyRelease: (String, Bool, Bool, Bool, Bool, Bool) -> Void
+    private let onKeyPress: (String, Bool, Bool, Bool, Bool, Bool, String?) -> Void
+    private let onKeyRelease: (String, Bool, Bool, Bool, Bool, Bool, String?) -> Void
     private var pressedKeys = Set<Int>()
 
-    init(onKeyPress: @escaping (String, Bool, Bool, Bool, Bool, Bool) -> Void, onKeyRelease: @escaping (String, Bool, Bool, Bool, Bool, Bool) -> Void) {
+    init(onKeyPress: @escaping (String, Bool, Bool, Bool, Bool, Bool, String?) -> Void, onKeyRelease: @escaping (String, Bool, Bool, Bool, Bool, Bool, String?) -> Void) {
       self.onKeyPress = onKeyPress
       self.onKeyRelease = onKeyRelease
       super.init(frame: .zero)
@@ -155,13 +161,21 @@ public class ExpoKeyEventModule: Module {
 
       // Get modifier flags from the key
       let modifiers = key.modifierFlags
+      // Safely extract character, check if it exists and is not empty
+      let character: String?
+      if #available(iOS 13.4, *) {
+        character = key.characters.isEmpty ? nil : key.characters
+      } else {
+        character = nil
+      }
       onKeyPress(
         String(keyCode),
         modifiers.contains(.shift),
         modifiers.contains(.control),
         modifiers.contains(.alternate),
         modifiers.contains(.command),
-        isRepeat
+        isRepeat,
+        character
       )
       return
     }
@@ -177,13 +191,21 @@ public class ExpoKeyEventModule: Module {
       pressedKeys.remove(keyCode)
 
       let modifiers = key.modifierFlags
+      // Safely extract character, check if it exists and is not empty
+      let character: String?
+      if #available(iOS 13.4, *) {
+        character = key.characters.isEmpty ? nil : key.characters
+      } else {
+        character = nil
+      }
       onKeyRelease(
         String(keyCode),
         modifiers.contains(.shift),
         modifiers.contains(.control),
         modifiers.contains(.alternate),
         modifiers.contains(.command),
-        false  // Key up events are never repeats
+        false,  // Key up events are never repeats
+        character
       )
       return
     }

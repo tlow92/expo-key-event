@@ -1,0 +1,137 @@
+{
+  "$schema": "https://biomejs.dev/schemas/2.2.4/schema.json",
+  "assist": { "actions": { "source": { "organizeImports": "on" } } },
+  "linter": {
+    "enabled": true,
+    "rules": {
+      "correctness": {
+        "useExhaustiveDependencies": "off",
+        "noInnerDeclarations": "off",
+        "noConstructorReturn": "off",
+        "noUnusedImports": {
+          "level": "warn",
+          "fix": "safe"
+        }
+      },
+      "suspicious": {
+        "noImplicitAnyLet": "off",
+        "noConfusingVoidType": "off",
+        "noEmptyInterface": "off",
+        "noExplicitAny": "off",
+        "noArrayIndexKey": "off",
+        "noDoubleEquals": "off",
+        "noAssignInExpressions": "off",
+        "noRedeclare": "off",
+        "noConsole": {
+          "level": "error",
+          "options": { "allow": ["warn", "error", "info"] }
+        }
+      },
+      "style": {
+        "noParameterAssign": "off",
+        "noNonNullAssertion": "off",
+        "noUnusedTemplateLiteral": "off",
+        "useDefaultParameterLast": "off",
+        "useConst": "off",
+        "useEnumInitializers": "off",
+        "useTemplate": "off",
+        "useSelfClosingElements": "off",
+        "noRestrictedImports": {
+          "level": "info",
+          "options": {
+            "paths": {
+              "tamagui": {
+                "importNames": [
+                  "Text",
+                  "H1",
+                  "H2",
+                  "H3",
+                  "H4",
+                  "Heading",
+                  "Paragraph"
+                ],
+                "message": "Import Text from '@aw/ui' instead of 'tamagui'. Use Text.H1, Text.H2, etc. for headings."
+              }
+            }
+          }
+        }
+      },
+      "security": {
+        "noDangerouslySetInnerHtml": "off",
+        "noDangerouslySetInnerHtmlWithChildren": "off"
+      },
+      "performance": {
+        "noDelete": "off",
+        "noAccumulatingSpread": "off"
+      },
+      "complexity": {
+        "noForEach": "off",
+        "noBannedTypes": "off",
+        "useLiteralKeys": "off",
+        "useSimplifiedLogicExpression": "off",
+        "useOptionalChain": "off",
+        "noUselessContinue": "off",
+        "noArguments": "off"
+      },
+      "a11y": {
+        "noSvgWithoutTitle": "off",
+        "useMediaCaption": "off",
+        "noHeaderScope": "off",
+        "useAltText": "off",
+        "useButtonType": "off",
+        "noAutofocus": "off"
+      }
+    }
+  },
+  "overrides": [
+    {
+      "includes": ["packages/ui/components/Text.tsx"],
+      "linter": {
+        "rules": {
+          "style": {
+            "noRestrictedImports": "off"
+          }
+        }
+      }
+    }
+  ],
+  "files": {
+    "ignoreUnknown": true,
+    "includes": [
+      "**",
+      "!node_modules",
+      "!**/*/generated-new.ts",
+      "!**/*/generated-v2.ts",
+      "!**/tamagui-web.css",
+      "!**/.expo",
+      "!**/.tamagui",
+      "!**/.claude",
+      "!**/storybook.requires.ts",
+      "!**/.expo-env.d.ts",
+      "!bento-bundle",
+      "!.github",
+      "!.playwright-mcp",
+      "!.tolgeerc",
+      "!.yarnrc.yml",
+      "!**/dist",
+      "!packages/app/api/client",
+      "!packages/config/i18n",
+      "!apps/aw-keycloakify/public/keycloakify-dev-resources"
+    ]
+  },
+  "formatter": {
+    "enabled": true,
+    "formatWithErrors": false,
+    "indentStyle": "space",
+    "indentWidth": 2,
+    "lineWidth": 90
+  },
+  "javascript": {
+    "formatter": {
+      "trailingCommas": "es5",
+      "jsxQuoteStyle": "double",
+      "semicolons": "always",
+      "quoteStyle": "double"
+    }
+  }
+}

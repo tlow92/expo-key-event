@@ -24,9 +24,18 @@ class ExpoKeyEventView(
 
   override fun onKeyDown(keyCode: Int, event: KeyEvent?): Boolean {
     event?.let { e ->
+      // Get unicode character with modifiers applied
+      val unicodeChar = e.getUnicodeChar(e.metaState)
+      val character = if (unicodeChar != 0) {
+        String(intArrayOf(unicodeChar), 0, 1)
+      } else {
+        null
+      }
+
       // Send all key events (including repeats) with accurate repeat flag
-      onKeyPress(mapOf(
+      onKeyPress(mapOf<String, Any>(
         "key" to keyCode.toString(),
+        "character" to (character ?: ""),
         "shiftKey" to e.isShiftPressed,
         "ctrlKey" to e.isCtrlPressed,
         "altKey" to e.isAltPressed,
@@ -39,8 +48,17 @@ class ExpoKeyEventView(
 
   override fun onKeyUp(keyCode: Int, event: KeyEvent?): Boolean {
     event?.let { e ->
-      onKeyRelease(mapOf(
+      // Get unicode character with modifiers applied
+      val unicodeChar = e.getUnicodeChar(e.metaState)
+      val character = if (unicodeChar != 0) {
+        String(intArrayOf(unicodeChar), 0, 1)
+      } else {
+        null
+      }
+
+      onKeyRelease(mapOf<String, Any>(
         "key" to keyCode.toString(),
+        "character" to (character ?: ""),
         "shiftKey" to e.isShiftPressed,
         "ctrlKey" to e.isCtrlPressed,
         "altKey" to e.isAltPressed,

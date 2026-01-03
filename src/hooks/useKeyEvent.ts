@@ -2,6 +2,7 @@ import { useEvent } from "expo";
 import { useEffect, useMemo } from "react";
 import { DevSettings } from "react-native";
 
+import { KeyPressEvent, KeyReleaseEvent } from "../ExpoKeyEvent.types";
 import ExpoKeyEventModule from "../ExpoKeyEventModule";
 import { unifyKeyCode } from "../utils/unifyKeyCode";
 
@@ -90,20 +91,20 @@ function useKeyEventImpl({
     const uniKey = unifyKeyCode(pressEvent.key);
     if (!preventReload && __DEV__ && uniKey === "KeyR") DevSettings.reload();
 
-    // Build base event
-    const event: any = {
+    // Build properly typed event
+    const event: KeyPressEvent = {
       key: uniKey,
+      character: pressEvent.character,
       eventType: "press" as const,
+      // Conditionally include modifiers
+      ...(captureModifiers && {
+        shiftKey: pressEvent.shiftKey ?? false,
+        ctrlKey: pressEvent.ctrlKey ?? false,
+        altKey: pressEvent.altKey ?? false,
+        metaKey: pressEvent.metaKey ?? false,
+        repeat: pressEvent.repeat ?? false,
+      }),
     };
-
-    // Conditionally add modifiers
-    if (captureModifiers) {
-      event.shiftKey = pressEvent.shiftKey ?? false;
-      event.ctrlKey = pressEvent.ctrlKey ?? false;
-      event.altKey = pressEvent.altKey ?? false;
-      event.metaKey = pressEvent.metaKey ?? false;
-      event.repeat = pressEvent.repeat ?? false;
-    }
 
     return event;
   }, [pressEvent, preventReload, captureModifiers]);
@@ -112,18 +113,20 @@ function useKeyEventImpl({
     if (!listenToRelease || !releaseEvent) return null;
     const uniKey = unifyKeyCode(releaseEvent.key);
 
-    const event: any = {
+    // Build properly typed event
+    const event: KeyReleaseEvent = {
       key: uniKey,
+      character: releaseEvent.character,
       eventType: "release" as const,
+      // Conditionally include modifiers
+      ...(captureModifiers && {
+        shiftKey: releaseEvent.shiftKey ?? false,
+        ctrlKey: releaseEvent.ctrlKey ?? false,
+        altKey: releaseEvent.altKey ?? false,
+        metaKey: releaseEvent.metaKey ?? false,
+        repeat: releaseEvent.repeat ?? false,
+      }),
     };
-
-    if (captureModifiers) {
-      event.shiftKey = releaseEvent.shiftKey ?? false;
-      event.ctrlKey = releaseEvent.ctrlKey ?? false;
-      event.altKey = releaseEvent.altKey ?? false;
-      event.metaKey = releaseEvent.metaKey ?? false;
-      event.repeat = releaseEvent.repeat ?? false;
-    }
 
     return event;
   }, [releaseEvent, listenToRelease, captureModifiers]);

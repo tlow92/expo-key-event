@@ -1,6 +1,7 @@
 // Base event type with modifier key support
 type KeyEventBase = {
   key: string;
+  character?: string | null;
   eventType: "press" | "release";
   shiftKey?: boolean;
   ctrlKey?: boolean;
