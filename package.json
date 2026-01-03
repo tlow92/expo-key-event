@@ -1,6 +1,6 @@
 {
   "name": "expo-key-event",
-  "version": "1.8.1",
+  "version": "1.8.2",
   "description": "Provides an interface for reading key events such as from external bluetooth keyboards on Android, iOS and Web.",
   "main": "build/index.js",
   "types": "build/index.d.ts",
