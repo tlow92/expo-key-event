@@ -19,6 +19,11 @@ export interface UseKeyEventListenerOptions {
    * @default false
    */
   listenToRelease?: boolean;
+  /**
+   * Pass 'true' to capture modifier keys (shift, ctrl, alt, meta) and repeat flag
+   * @default false
+   */
+  captureModifiers?: boolean;
 }
 
 // New API - listener + options object
@@ -69,17 +74,47 @@ function useKeyEventListenerImpl(
     listenOnMount = true,
     preventReload = false,
     listenToRelease = false,
+    captureModifiers = false,
   }: UseKeyEventListenerOptions,
 ) {
   const onKeyDown = useCallback(
-    (event: KeyboardEvent) => listener({ key: event.code, eventType: "press" }),
-    [listener],
+    (event: KeyboardEvent) => {
+      // Build properly typed event
+      const pressEvent: KeyPressEvent = {
+        key: event.code,
+        eventType: "press" as const,
+        // Conditionally include modifiers
+        ...(captureModifiers && {
+          shiftKey: event.shiftKey,
+          ctrlKey: event.ctrlKey,
+          altKey: event.altKey,
+          metaKey: event.metaKey,
+          repeat: event.repeat,
+        }),
+      };
+      listener(pressEvent);
+    },
+    [listener, captureModifiers],
   );
 
   const onKeyUp = useCallback(
-    (event: KeyboardEvent) =>
-      listener({ key: event.code, eventType: "release" }),
-    [listener],
+    (event: KeyboardEvent) => {
+      // Build properly typed event
+      const releaseEvent: KeyReleaseEvent = {
+        key: event.code,
+        eventType: "release" as const,
+        // Conditionally include modifiers
+        ...(captureModifiers && {
+          shiftKey: event.shiftKey,
+          ctrlKey: event.ctrlKey,
+          altKey: event.altKey,
+          metaKey: event.metaKey,
+          repeat: event.repeat,
+        }),
+      };
+      listener(releaseEvent);
+    },
+    [listener, captureModifiers],
   );
 
   const startListening = useCallback(() => {
