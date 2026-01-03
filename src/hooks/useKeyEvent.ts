@@ -1,5 +1,5 @@
-import { useEvent } from "expo";
-import { useEffect, useMemo } from "react";
+import { useEventListener } from "expo";
+import { useCallback, useEffect, useState } from "react";
 import { DevSettings } from "react-native";
 
 import { KeyPressEvent, KeyReleaseEvent } from "../ExpoKeyEvent.types";
@@ -75,8 +75,65 @@ function useKeyEventImpl({
   listenToRelease = false,
   captureModifiers = false,
 }: UseKeyEventOptions) {
-  const pressEvent = useEvent(ExpoKeyEventModule, "onKeyPress");
-  const releaseEvent = useEvent(ExpoKeyEventModule, "onKeyRelease");
+  const [keyEvent, setKeyEvent] = useState<KeyPressEvent | null>(null);
+  const [keyReleaseEvent, setKeyReleaseEvent] =
+    useState<KeyReleaseEvent | null>(null);
+
+  const onKeyPress = useCallback(
+    (rawEvent: KeyPressEvent) => {
+      const uniKey = unifyKeyCode(rawEvent.key);
+      if (!preventReload && __DEV__ && uniKey === "KeyR") DevSettings.reload();
+
+      // Build properly typed event
+      const event: KeyPressEvent = {
+        key: uniKey,
+        character: rawEvent.character,
+        eventType: "press" as const,
+        // Conditionally include modifiers
+        ...(captureModifiers && {
+          shiftKey: rawEvent.shiftKey ?? false,
+          ctrlKey: rawEvent.ctrlKey ?? false,
+          altKey: rawEvent.altKey ?? false,
+          metaKey: rawEvent.metaKey ?? false,
+          repeat: rawEvent.repeat ?? false,
+        }),
+      };
+
+      setKeyEvent(event);
+    },
+    [preventReload, captureModifiers],
+  );
+
+  const onKeyRelease = useCallback(
+    (rawEvent: KeyReleaseEvent) => {
+      const uniKey = unifyKeyCode(rawEvent.key);
+
+      // Build properly typed event
+      const event: KeyReleaseEvent = {
+        key: uniKey,
+        character: rawEvent.character,
+        eventType: "release" as const,
+        // Conditionally include modifiers
+        ...(captureModifiers && {
+          shiftKey: rawEvent.shiftKey ?? false,
+          ctrlKey: rawEvent.ctrlKey ?? false,
+          altKey: rawEvent.altKey ?? false,
+          metaKey: rawEvent.metaKey ?? false,
+          repeat: rawEvent.repeat ?? false,
+        }),
+      };
+
+      setKeyReleaseEvent(event);
+    },
+    [captureModifiers],
+  );
+
+  useEventListener(ExpoKeyEventModule, "onKeyPress", onKeyPress);
+  useEventListener(
+    ExpoKeyEventModule,
+    "onKeyRelease",
+    listenToRelease ? onKeyRelease : () => {},
+  );
 
   useEffect(() => {
     if (listenOnMount) ExpoKeyEventModule.startListening();
@@ -85,51 +142,6 @@ function useKeyEventImpl({
       ExpoKeyEventModule.stopListening();
     };
   }, [listenOnMount]);
-
-  const keyEvent = useMemo(() => {
-    if (!pressEvent) return null;
-    const uniKey = unifyKeyCode(pressEvent.key);
-    if (!preventReload && __DEV__ && uniKey === "KeyR") DevSettings.reload();
-
-    // Build properly typed event
-    const event: KeyPressEvent = {
-      key: uniKey,
-      character: pressEvent.character,
-      eventType: "press" as const,
-      // Conditionally include modifiers
-      ...(captureModifiers && {
-        shiftKey: pressEvent.shiftKey ?? false,
-        ctrlKey: pressEvent.ctrlKey ?? false,
-        altKey: pressEvent.altKey ?? false,
-        metaKey: pressEvent.metaKey ?? false,
-        repeat: pressEvent.repeat ?? false,
-      }),
-    };
-
-    return event;
-  }, [pressEvent, preventReload, captureModifiers]);
-
-  const keyReleaseEvent = useMemo(() => {
-    if (!listenToRelease || !releaseEvent) return null;
-    const uniKey = unifyKeyCode(releaseEvent.key);
-
-    // Build properly typed event
-    const event: KeyReleaseEvent = {
-      key: uniKey,
-      character: releaseEvent.character,
-      eventType: "release" as const,
-      // Conditionally include modifiers
-      ...(captureModifiers && {
-        shiftKey: releaseEvent.shiftKey ?? false,
-        ctrlKey: releaseEvent.ctrlKey ?? false,
-        altKey: releaseEvent.altKey ?? false,
-        metaKey: releaseEvent.metaKey ?? false,
-        repeat: releaseEvent.repeat ?? false,
-      }),
-    };
-
-    return event;
-  }, [releaseEvent, listenToRelease, captureModifiers]);
 
   return {
     /**
