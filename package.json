@@ -31,6 +31,7 @@
   "license": "MIT",
   "homepage": "https://github.com/tlow92/expo-key-event#readme",
   "devDependencies": {
+    "@release-it/conventional-changelog": "^10.0.4",
     "@types/react": "~18.3.12",
     "expo": "~52.0.0",
     "expo-module-scripts": "^4.0.2",
@@ -43,15 +44,22 @@
     "react-native": "*"
   },
   "release-it": {
-    "$schema": "https://unpkg.com/release-it/schema/release-it.json",
     "git": {
-      "commitMessage": "chore: release v${version}"
+      "commitMessage": "chore: release ${version}",
+      "tagName": "v${version}"
     },
     "npm": {
       "publish": true
     },
     "github": {
       "release": true
+    },
+    "plugins": {
+      "@release-it/conventional-changelog": {
+        "preset": {
+          "name": "angular"
+        }
+      }
     }
   }
 }
