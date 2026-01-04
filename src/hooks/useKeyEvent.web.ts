@@ -28,7 +28,7 @@ export interface UseKeyEventOptions {
 
 // New API - options object
 export function useKeyEvent(
-  options?: UseKeyEventOptions,
+  options?: UseKeyEventOptions
 ): ReturnType<typeof useKeyEventImpl>;
 /**
  * Legacy API - positional parameters (for backwards compatibility)
@@ -39,13 +39,13 @@ export function useKeyEvent(
 export function useKeyEvent(
   listenOnMount?: boolean,
   preventReload?: boolean,
-  listenToRelease?: boolean,
+  listenToRelease?: boolean
 ): ReturnType<typeof useKeyEventImpl>;
 
 export function useKeyEvent(
   optionsOrListenOnMount?: UseKeyEventOptions | boolean,
   preventReload?: boolean,
-  listenToRelease?: boolean,
+  listenToRelease?: boolean
 ) {
   // Backwards compatibility: detect if using old API (boolean) or new API (object/undefined)
   let options: UseKeyEventOptions;
@@ -72,15 +72,14 @@ function useKeyEventImpl({
   captureModifiers = false,
 }: UseKeyEventOptions) {
   const [keyEvent, setKeyEvent] = useState<KeyPressEvent | null>(null);
-  const [keyReleaseEvent, setKeyReleaseEvent] =
-    useState<KeyReleaseEvent | null>(null);
+  const [keyReleaseEvent, setKeyReleaseEvent] = useState<KeyReleaseEvent | null>(null);
 
   const onKeyDown = useCallback(
     (event: KeyboardEvent) => {
       // Build properly typed event
       const pressEvent: KeyPressEvent = {
         key: event.code,
-        character: event.key.length === 1 ? event.key : undefined,
+        character: event.key,
         eventType: "press" as const,
         // Conditionally include modifiers
         ...(captureModifiers && {
@@ -94,7 +93,7 @@ function useKeyEventImpl({
 
       setKeyEvent(pressEvent);
     },
-    [captureModifiers],
+    [captureModifiers]
   );
 
   const onKeyUp = useCallback(
@@ -102,7 +101,7 @@ function useKeyEventImpl({
       // Build properly typed event
       const releaseEvent: KeyReleaseEvent = {
         key: event.code,
-        character: event.key.length === 1 ? event.key : undefined,
+        character: event.key,
         eventType: "release" as const,
         // Conditionally include modifiers
         ...(captureModifiers && {
@@ -116,7 +115,7 @@ function useKeyEventImpl({
 
       setKeyReleaseEvent(releaseEvent);
     },
-    [captureModifiers],
+    [captureModifiers]
   );
 
   const startListening = useCallback(() => {

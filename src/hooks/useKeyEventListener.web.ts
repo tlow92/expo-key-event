@@ -29,7 +29,7 @@ export interface UseKeyEventListenerOptions {
 // New API - listener + options object
 export function useKeyEventListener(
   listener: (event: KeyPressEvent | KeyReleaseEvent) => void,
-  options?: UseKeyEventListenerOptions,
+  options?: UseKeyEventListenerOptions
 ): ReturnType<typeof useKeyEventListenerImpl>;
 /**
  * Legacy API - listener + positional parameters (for backwards compatibility)
@@ -41,14 +41,14 @@ export function useKeyEventListener(
   listener: (event: KeyPressEvent | KeyReleaseEvent) => void,
   listenOnMount?: boolean,
   preventReload?: boolean,
-  listenToRelease?: boolean,
+  listenToRelease?: boolean
 ): ReturnType<typeof useKeyEventListenerImpl>;
 
 export function useKeyEventListener(
   listener: (event: KeyPressEvent | KeyReleaseEvent) => void,
   optionsOrListenOnMount?: UseKeyEventListenerOptions | boolean,
   preventReload?: boolean,
-  listenToRelease?: boolean,
+  listenToRelease?: boolean
 ) {
   // Backwards compatibility: detect if using old API (boolean) or new API (object/undefined)
   let options: UseKeyEventListenerOptions;
@@ -75,13 +75,14 @@ function useKeyEventListenerImpl(
     preventReload = false,
     listenToRelease = false,
     captureModifiers = false,
-  }: UseKeyEventListenerOptions,
+  }: UseKeyEventListenerOptions
 ) {
   const onKeyDown = useCallback(
     (event: KeyboardEvent) => {
       // Build properly typed event
       const pressEvent: KeyPressEvent = {
         key: event.code,
+        character: event.key,
         eventType: "press" as const,
         // Conditionally include modifiers
         ...(captureModifiers && {
@@ -94,7 +95,7 @@ function useKeyEventListenerImpl(
       };
       listener(pressEvent);
     },
-    [listener, captureModifiers],
+    [listener, captureModifiers]
   );
 
   const onKeyUp = useCallback(
@@ -102,6 +103,7 @@ function useKeyEventListenerImpl(
       // Build properly typed event
       const releaseEvent: KeyReleaseEvent = {
         key: event.code,
+        character: event.key,
         eventType: "release" as const,
         // Conditionally include modifiers
         ...(captureModifiers && {
@@ -114,7 +116,7 @@ function useKeyEventListenerImpl(
       };
       listener(releaseEvent);
     },
-    [listener, captureModifiers],
+    [listener, captureModifiers]
   );
 
   const startListening = useCallback(() => {
