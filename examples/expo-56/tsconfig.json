@@ -1,0 +1,10 @@
+{
+  "extends": "expo/tsconfig.base",
+  "compilerOptions": {
+    "strict": true,
+    "paths": {
+      "expo-key-event": ["../../src/index"],
+      "expo-key-event/*": ["../../src/*"]
+    }
+  }
+}
