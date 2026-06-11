@@ -2,7 +2,7 @@ import { useEventListener } from "expo";
 import { useCallback, useEffect, useState } from "react";
 import { DevSettings } from "react-native";
 
-import { KeyPressEvent, KeyReleaseEvent } from "../ExpoKeyEvent.types";
+import type { KeyPressEvent, KeyReleaseEvent } from "../ExpoKeyEvent.types";
 import ExpoKeyEventModule from "../ExpoKeyEventModule";
 import { unifyKeyCode } from "../utils/unifyKeyCode";
 

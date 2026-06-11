@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useState } from "react";
 
-import { KeyPressEvent, KeyReleaseEvent } from "../ExpoKeyEvent.types";
+import type { KeyPressEvent, KeyReleaseEvent } from "../ExpoKeyEvent.types";
 
 export interface UseKeyEventOptions {
   /**
@@ -28,7 +28,7 @@ export interface UseKeyEventOptions {
 
 // New API - options object
 export function useKeyEvent(
-  options?: UseKeyEventOptions
+  options?: UseKeyEventOptions,
 ): ReturnType<typeof useKeyEventImpl>;
 /**
  * Legacy API - positional parameters (for backwards compatibility)
@@ -39,13 +39,13 @@ export function useKeyEvent(
 export function useKeyEvent(
   listenOnMount?: boolean,
   preventReload?: boolean,
-  listenToRelease?: boolean
+  listenToRelease?: boolean,
 ): ReturnType<typeof useKeyEventImpl>;
 
 export function useKeyEvent(
   optionsOrListenOnMount?: UseKeyEventOptions | boolean,
   preventReload?: boolean,
-  listenToRelease?: boolean
+  listenToRelease?: boolean,
 ) {
   // Backwards compatibility: detect if using old API (boolean) or new API (object/undefined)
   let options: UseKeyEventOptions;
@@ -72,7 +72,8 @@ function useKeyEventImpl({
   captureModifiers = false,
 }: UseKeyEventOptions) {
   const [keyEvent, setKeyEvent] = useState<KeyPressEvent | null>(null);
-  const [keyReleaseEvent, setKeyReleaseEvent] = useState<KeyReleaseEvent | null>(null);
+  const [keyReleaseEvent, setKeyReleaseEvent] =
+    useState<KeyReleaseEvent | null>(null);
 
   const onKeyDown = useCallback(
     (event: KeyboardEvent) => {
@@ -93,7 +94,7 @@ function useKeyEventImpl({
 
       setKeyEvent(pressEvent);
     },
-    [captureModifiers]
+    [captureModifiers],
   );
 
   const onKeyUp = useCallback(
@@ -115,7 +116,7 @@ function useKeyEventImpl({
 
       setKeyReleaseEvent(releaseEvent);
     },
-    [captureModifiers]
+    [captureModifiers],
   );
 
   const startListening = useCallback(() => {

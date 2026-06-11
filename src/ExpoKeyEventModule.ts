@@ -1,6 +1,6 @@
 import { NativeModule, requireNativeModule } from "expo";
 
-import { ExpoKeyEventModuleEvents } from "./ExpoKeyEvent.types";
+import type { ExpoKeyEventModuleEvents } from "./ExpoKeyEvent.types";
 
 declare class ExpoKeyEventModule extends NativeModule<ExpoKeyEventModuleEvents> {
   startListening(): void;
