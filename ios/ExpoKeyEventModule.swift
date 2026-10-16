@@ -48,9 +48,10 @@ public class ExpoKeyEventModule: Module {
               self.keyboardListenerView = listenerView
             }
           #else
-            if let window = UIApplication.shared.delegate?.window,
-             let rootView = window?.rootViewController?.view {
-              rootView.addSubview(listenerView)
+            // Add to the window, not the root view controller's view: a full-screen modal removes that view
+            // from the window once it is presented, taking the listener and its first responder status with it.
+            if let window = UIApplication.shared.delegate?.window ?? nil {
+              window.addSubview(listenerView)
               listenerView.becomeFirstResponder()  // crucial for receiving hardware key events
               self.keyboardListenerView = listenerView
             }
